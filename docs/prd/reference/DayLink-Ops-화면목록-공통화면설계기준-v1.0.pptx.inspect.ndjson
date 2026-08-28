@@ -1,0 +1,315 @@
+{"kind":"deck","id":"pr/3t6kzl","name":"Deck"}
+{"kind":"layout","layoutId":"51f92b2d-f489-476a-875c-8c059dc0efea","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"2037fb85-c344-4efa-b2cd-c140bc672d4a","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/86pfcg","slide":1,"title":"DAYLINK OPS","textShapes":14}
+{"kind":"shape","id":"sh/kbudsvut","slide":1,"bbox":[0,0,26,720]}
+{"kind":"textbox","id":"sh/zalwjqdo","slide":1,"text":"DAYLINK OPS","textPreview":"DAYLINK OPS","textChars":11,"textLines":1,"bbox":[70,76,280,26]}
+{"kind":"textbox","id":"sh/y9cvqlc3","slide":1,"text":"React 운영자센터","textPreview":"React 운영자센터","textChars":11,"textLines":1,"bbox":[70,160,760,70]}
+{"kind":"textbox","id":"sh/x83ehgvi","slide":1,"text":"화면 목록 및 공통 화면설계 기준","textPreview":"화면 목록 및 공통 화면설계 기준","textChars":18,"textLines":1,"bbox":[70,235,850,48]}
+{"kind":"shape","id":"sh/c7udovux","slide":1,"bbox":[70,314,780,0]}
+{"kind":"shape","id":"sh/a5cvmlcr","slide":1,"bbox":[900,120,292,430]}
+{"kind":"textbox","id":"sh/h47etkvm","slide":1,"text":"문서 목적","textPreview":"문서 목적","textChars":5,"textLines":1,"bbox":[930,155,232,38]}
+{"kind":"textbox","id":"sh/w3yx0fu1","slide":1,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[930,218,20,58]}
+{"kind":"textbox","id":"sh/2xgbmhcf","slide":1,"text":"상세 화면설계 전 화면 누락 방지","textPreview":"상세 화면설계 전 화면 누락 방지","textChars":18,"textLines":1,"bbox":[953,218,202,58]}
+{"kind":"textbox","id":"sh/3ipcfmd0","slide":1,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[930,276,20,58]}
+{"kind":"textbox","id":"sh/ojytorul","slide":1,"text":"사이트 공통 동작을 한 번만 정의","textPreview":"사이트 공통 동작을 한 번만 정의","textChars":18,"textLines":1,"bbox":[953,276,202,58]}
+{"kind":"textbox","id":"sh/pk7uhwv6","slide":1,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[930,334,20,58]}
+{"kind":"textbox","id":"sh/etwbihcj","slide":1,"text":"기획·개발·QA의 동일 기준 확보","textPreview":"기획·개발·QA의 동일 기준 확보","textChars":18,"textLines":1,"bbox":[953,334,202,58]}
+{"kind":"textbox","id":"sh/fu5cb2d4","slide":1,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[930,392,20,58]}
+{"kind":"textbox","id":"sh/gvetk7u9","slide":1,"text":"화면별 PPT 작성 순서의 기준선","textPreview":"화면별 PPT 작성 순서의 기준선","textChars":18,"textLines":1,"bbox":[953,392,202,58]}
+{"kind":"textbox","id":"sh/1wnudcvu","slide":1,"text":"2026.08.18","textPreview":"2026.08.18","textChars":10,"textLines":1,"bbox":[70,652,220,24]}
+{"kind":"textbox","id":"sh/yp0vu1cn","slide":1,"text":"1 / 14","textPreview":"1 / 14","textChars":6,"textLines":1,"bbox":[1110,652,82,24]}
+{"kind":"table","id":"tb/6d8n2lgb","slide":1,"name":"","rows":4,"cols":2,"preview":"구분 | 내용","bbox":[70,360,720,152]}
+{"kind":"notes","id":"nt/86pfcg","slide":1,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/nehwfd","slide":2,"title":"01. 문서 적용 범위","textShapes":16}
+{"kind":"shape","id":"sh/cv25kju9","slide":2,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/ratoredo","slide":2,"text":"01. 문서 적용 범위","textPreview":"01. 문서 적용 범위","textChars":12,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/q9kni9c3","slide":2,"text":"상세 화면설계 전에 화면과 공통 규칙을 먼저 고정한다","textPreview":"상세 화면설계 전에 화면과 공통 규칙을 먼저 고정한다","textChars":29,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/p8b6p4vi","slide":2,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/4725gzud","slide":2,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/36tonuds","slide":2,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/25knepc7","slide":2,"text":"2 / 14","textPreview":"2 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"shape","id":"sh/g3i5cfu1","slide":2,"bbox":[842,144,392,450]}
+{"kind":"textbox","id":"sh/i9cvmdwf","slide":2,"text":"적용 원칙","textPreview":"적용 원칙","textChars":5,"textLines":1,"bbox":[872,172,330,34]}
+{"kind":"textbox","id":"sh/jalcvidk","slide":2,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[872,230,20,61]}
+{"kind":"textbox","id":"sh/kbedone5","slide":2,"text":"React 운영자센터에만 적용한다.","textPreview":"React 운영자센터에만 적용한다.","textChars":19,"textLines":1,"bbox":[895,230,302,61]}
+{"kind":"textbox","id":"sh/5cnuxsvq","slide":2,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[872,291,20,61]}
+{"kind":"textbox","id":"sh/a5cbidw3","slide":2,"text":"업무 규칙의 최종 판정은 Core API가 담당한다.","textPreview":"업무 규칙의 최종 판정은 Core API가 담당한다.","textChars":29,"textLines":1,"bbox":[895,291,302,61]}
+{"kind":"textbox","id":"sh/v6lcrixo","slide":2,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[872,352,20,61]}
+{"kind":"textbox","id":"sh/w7utkne9","slide":2,"text":"화면별 설계서는 공통 규칙 ID를 참조한다.","textPreview":"화면별 설계서는 공통 규칙 ID를 참조한다.","textChars":24,"textLines":1,"bbox":[895,352,302,61]}
+{"kind":"textbox","id":"sh/x83utsvu","slide":2,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[872,413,20,61]}
+{"kind":"textbox","id":"sh/mhsbetw7","slide":2,"text":"예외가 있으면 해당 화면에서 예외만 추가한다.","textPreview":"예외가 있으면 해당 화면에서 예외만 추가한다.","textChars":25,"textLines":1,"bbox":[895,413,302,61]}
+{"kind":"textbox","id":"sh/ni1cnyxs","slide":2,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[872,474,20,61]}
+{"kind":"textbox","id":"sh/bmhsvudk","slide":2,"text":"P0 화면부터 작성하고 P1은 다음 묶음으로 분리한다.","textPreview":"P0 화면부터 작성하고 P1은 다음 묶음으로 분리한다.","textChars":30,"textLines":1,"bbox":[895,474,302,61]}
+{"kind":"textbox","id":"sh/ql8rmpcz","slide":2,"text":"이번 단계: 목록 + 공통","textPreview":"이번 단계: 목록 + 공통","textChars":14,"textLines":1,"bbox":[890,530,280,30]}
+{"kind":"table","id":"tb/w7ylkjid","slide":2,"name":"","rows":7,"cols":3,"preview":"구분 | 이번 PPT에서 확정하는 내용 | 후속 산출물","bbox":[46,144,760,450]}
+{"kind":"notes","id":"nt/nehwfd","slide":2,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/mpqq8d","slide":3,"title":"02. 식별 및 분류 기준","textShapes":9}
+{"kind":"shape","id":"sh/36pk3qls","slide":3,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/o7ylwvmd","slide":3,"text":"02. 식별 및 분류 기준","textPreview":"02. 식별 및 분류 기준","textChars":14,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/p87m503i","slide":3,"text":"화면 ID는 업무영역과 화면 단위를 동시에 식별한다","textPreview":"화면 ID는 업무영역과 화면 단위를 동시에 식별한다","textChars":28,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/ehw3ql4v","slide":3,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/fi5kzq5g","slide":3,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/gjylsvm1","slide":3,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/1k721gnm","slide":3,"text":"3 / 14","textPreview":"3 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"textbox","id":"sh/yd03254f","slide":3,"text":"ID 형식","textPreview":"ID 형식","textChars":5,"textLines":1,"bbox":[46,145,150,30]}
+{"kind":"shape","id":"sh/ze94bal0","slide":3,"bbox":[46,190,550,94]}
+{"kind":"textbox","id":"sh/za5ojehg","slide":3,"text":"OPS - BKG - 002","textPreview":"OPS - BKG - 002","textChars":15,"textLines":1,"bbox":[76,208,490,38]}
+{"kind":"textbox","id":"sh/y9wnat0v","slide":3,"text":"시스템     업무영역     일련번호","textPreview":"시스템     업무영역     일련번호","textChars":21,"textLines":1,"bbox":[76,248,490,22]}
+{"kind":"textbox","id":"sh/kbe5cji1","slide":3,"text":"화면 유형","textPreview":"화면 유형","textChars":5,"textLines":1,"bbox":[46,324,150,30]}
+{"kind":"textbox","id":"sh/mdwnet07","slide":3,"text":"권한 표기","textPreview":"권한 표기","textChars":5,"textLines":1,"bbox":[690,366,150,30]}
+{"kind":"table","id":"tb/axsba547","slide":3,"name":"","rows":5,"cols":4,"preview":"업무 코드 | 의미 | 업무 코드 | 의미","bbox":[630,145,604,188]}
+{"kind":"table","id":"tb/ovqt8vmh","slide":3,"name":"","rows":7,"cols":3,"preview":"유형 | 정의 | 대표 사용","bbox":[46,366,610,246]}
+{"kind":"table","id":"tb/2t8b654b","slide":3,"name":"","rows":6,"cols":3,"preview":"표기 | 대상 | 주의","bbox":[690,408,544,204]}
+{"kind":"notes","id":"nt/mpqq8d","slide":3,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/5zfcro","slide":4,"title":"03. 화면 목록 A","textShapes":6}
+{"kind":"shape","id":"sh/zip0rexs","slide":4,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/kjyhkjyd","slide":4,"text":"03. 화면 목록 A","textPreview":"03. 화면 목록 A","textChars":11,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/lk7itofy","slide":4,"text":"인증·대시보드·심사 화면이 운영 업무의 첫 진입점이다","textPreview":"인증·대시보드·심사 화면이 운영 업무의 첫 진입점이다","textChars":29,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/atwze9gb","slide":4,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/bupgnuxw","slide":4,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/cvyhgzy1","slide":4,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/xw7ip4fm","slide":4,"text":"4 / 14","textPreview":"4 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"textbox","id":"sh/vq90zyx0","slide":4,"text":"목록과 상세는 URL로 직접 복원","textPreview":"목록과 상세는 URL로 직접 복원","textChars":18,"textLines":1,"bbox":[46,615,290,30]}
+{"kind":"textbox","id":"sh/f2lofmpg","slide":4,"text":"심사 결정은 version 검사 후 수행","textPreview":"심사 결정은 version 검사 후 수행","textChars":22,"textLines":1,"bbox":[350,615,340,30]}
+{"kind":"table","id":"tb/7q1g3ex0","slide":4,"name":"","rows":7,"cols":7,"preview":"화면 ID | 화면명 | 유형 | 경로 | 대표 권한 | 주요 연결 | 등급","bbox":[46,150,1190,444]}
+{"kind":"notes","id":"nt/5zfcro","slide":4,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/iqa6mu","slide":5,"title":"03. 화면 목록 B","textShapes":6}
+{"kind":"shape","id":"sh/jat8r2tk","slide":5,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/kb29k7a5","slide":5,"text":"03. 화면 목록 B","textPreview":"03. 화면 목록 B","textChars":11,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/lcbqtcbq","slide":5,"text":"고객·파트너·예약 화면은 검색과 단건 타임라인을 분리한다","textPreview":"고객·파트너·예약 화면은 검색과 단건 타임라인을 분리한다","textChars":31,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/al0rexc3","slide":5,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/bm98n2to","slide":5,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/w729gna9","slide":5,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/x8bqpsbu","slide":5,"text":"5 / 14","textPreview":"5 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"textbox","id":"sh/vidszmts","slide":5,"text":"연락처는 기본 마스킹","textPreview":"연락처는 기본 마스킹","textChars":11,"textLines":1,"bbox":[46,615,250,30]}
+{"kind":"textbox","id":"sh/bixgnuls","slide":5,"text":"목록 조건은 URL query로 유지","textPreview":"목록 조건은 URL query로 유지","textChars":20,"textLines":1,"bbox":[312,615,330,30]}
+{"kind":"table","id":"tb/b6pknahw","slide":5,"name":"","rows":7,"cols":7,"preview":"화면 ID | 화면명 | 유형 | 경로 | 대표 권한 | 주요 연결 | 등급","bbox":[46,150,1190,444]}
+{"kind":"notes","id":"nt/iqa6mu","slide":5,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/ew1s2t","slide":6,"title":"03. 화면 목록 C","textShapes":6}
+{"kind":"shape","id":"sh/43a1cfid","slide":6,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/j21kjuhs","slide":6,"text":"03. 화면 목록 C","textPreview":"03. 화면 목록 C","textChars":11,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/i1sjap0n","slide":6,"text":"환불·사고·정산은 요청과 승인, 원장 정정을 분리한다","textPreview":"환불·사고·정산은 요청과 승인, 원장 정정을 분리한다","textChars":29,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/ts32p4za","slide":6,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/s7ulgzip","slide":6,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/r6lknuh4","slide":6,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/65sjep0j","slide":6,"text":"6 / 14","textPreview":"6 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"textbox","id":"sh/8bq14vi5","slide":6,"text":"100,000원 초과·예외 환불은 2차 승인","textPreview":"100,000원 초과·예외 환불은 2차 승인","textChars":24,"textLines":1,"bbox":[46,615,430,30]}
+{"kind":"textbox","id":"sh/atwfyhgn","slide":6,"text":"기존 원장은 수정하지 않고 조정 행 추가","textPreview":"기존 원장은 수정하지 않고 조정 행 추가","textChars":22,"textLines":1,"bbox":[492,615,430,30]}
+{"kind":"table","id":"tb/gvipo3it","slide":6,"name":"","rows":7,"cols":7,"preview":"화면 ID | 화면명 | 유형 | 경로 | 대표 권한 | 주요 연결 | 등급","bbox":[46,150,1190,444]}
+{"kind":"notes","id":"nt/ew1s2t","slide":6,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/acw8s1","slide":7,"title":"03. 화면 목록 D","textShapes":7}
+{"kind":"shape","id":"sh/fmlk3i18","slide":7,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/0nu1wn2t","slide":7,"text":"03. 화면 목록 D","textPreview":"03. 화면 목록 D","textChars":11,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/1o325sje","slide":7,"text":"지원 화면과 공통 팝업도 화면 목록에서 독립 관리한다","textPreview":"지원 화면과 공통 팝업도 화면 목록에서 독립 관리한다","textChars":29,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/mpcjyxkz","slide":7,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/nq5k7i1k","slide":7,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/ore10n25","slide":7,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/9sn29sjq","slide":7,"text":"7 / 14","textPreview":"7 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"textbox","id":"sh/atw32xkv","slide":7,"text":"지원·관리 화면","textPreview":"지원·관리 화면","textChars":8,"textLines":1,"bbox":[46,143,240,28]}
+{"kind":"textbox","id":"sh/j6tc369g","slide":7,"text":"공통 팝업","textPreview":"공통 팝업","textChars":5,"textLines":1,"bbox":[660,143,240,28]}
+{"kind":"textbox","id":"sh/58vu5wrm","slide":7,"text":"※ Drawer·Popup도 접근성, 권한, 감사, 오류 규칙의 적용 대상이다.","textPreview":"※ Drawer·Popup도 접근성, 권한, 감사, 오류 규칙의 적용 대상이다.","textChars":44,"textLines":1,"bbox":[46,585,1188,34]}
+{"kind":"table","id":"tb/6hk3up8j","slide":7,"name":"","rows":6,"cols":4,"preview":"화면 ID | 화면명 | 유형 | 경로/연결","bbox":[46,180,575,370]}
+{"kind":"table","id":"tb/hcryponm","slide":7,"name":"","rows":7,"cols":4,"preview":"화면 ID | 팝업명 | 호출 화면 | 필수 조건","bbox":[660,180,574,370]}
+{"kind":"notes","id":"nt/acw8s1","slide":7,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/k562q8","slide":8,"title":"04. 메뉴 및 화면 연결","textShapes":5}
+{"kind":"shape","id":"sh/9wfqlsni","slide":8,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/m9o7ax47","slide":8,"text":"04. 메뉴 및 화면 연결","textPreview":"04. 메뉴 및 화면 연결","textChars":14,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/7ax8j25c","slide":8,"text":"메뉴는 역할별로 보이되 URL과 API 권한은 별도로 검증한다","textPreview":"메뉴는 역할별로 보이되 URL과 API 권한은 별도로 검증한다","textChars":34,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/wz69g7m9","slide":8,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/h0zqpcnu","slide":8,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/uxorex43","slide":8,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/vyx8n25o","slide":8,"text":"8 / 14","textPreview":"8 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"shape","id":"sh/54zqtcnq","slide":8,"bbox":[46,615,1188,40]}
+{"kind":"textbox","id":"sh/pcnal0rq","slide":8,"text":"중요: 메뉴 미노출은 UX 처리일 뿐이다. 직접 URL과 API 요청은 서버가 다시 권한을 검사한다.","textPreview":"중요: 메뉴 미노출은 UX 처리일 뿐이다. 직접 URL과 API 요청은 서버가 다시 권한을 검사한다.","textChars":56,"textLines":1,"bbox":[62,618,1156,34]}
+{"kind":"table","id":"tb/1c7etgve","slide":8,"name":"","rows":8,"cols":5,"preview":"1Depth | 2Depth/탭 | 대표 화면 ID | 대표 권한 | 연결 규칙","bbox":[46,148,1188,445]}
+{"kind":"notes","id":"nt/k562q8","slide":8,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/ocguuh","slide":9,"title":"05. 공통 레이아웃·내비게이션","textShapes":29}
+{"kind":"shape","id":"sh/fm1g3apk","slide":9,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/gnahwf65","slide":9,"text":"05. 공통 레이아웃·내비게이션","textPreview":"05. 공통 레이아웃·내비게이션","textChars":17,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/hojy5k7q","slide":9,"text":"모든 업무 화면은 동일한 셸과 작업 위치를 사용한다","textPreview":"모든 업무 화면은 동일한 셸과 작업 위치를 사용한다","textChars":28,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/6x8fq5o3","slide":9,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/7yhgzapo","slide":9,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/sjqxsf69","slide":9,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/tkzy1k7e","slide":9,"text":"9 / 14","textPreview":"9 / 14","textChars":6,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"shape","id":"sh/it8fm58r","slide":9,"bbox":[46,150,820,470]}
+{"kind":"shape","id":"sh/juhgvqpc","slide":9,"bbox":[46,150,820,56]}
+{"kind":"textbox","id":"sh/3698betk","slide":9,"text":"DayLink Ops","textPreview":"DayLink Ops","textChars":11,"textLines":1,"bbox":[64,158,190,40]}
+{"kind":"textbox","id":"sh/25gri9cz","slide":9,"text":"알림   사용자   로그아웃","textPreview":"알림   사용자   로그아웃","textChars":15,"textLines":1,"bbox":[606,158,240,40]}
+{"kind":"shape","id":"sh/p8rqdobq","slide":9,"bbox":[46,206,180,414]}
+{"kind":"textbox","id":"sh/47i9kju5","slide":9,"text":"대시보드\n\n심사\n고객·파트너\n예약·환불\n사고·정산\n콘텐츠\n보안·시스템","textPreview":"대시보드 |  | 심사 | 고객·파트너 | 예약·환불 | 사고·정산 | 콘텐츠 | 보안·시스템","textChars":38,"textLines":8,"bbox":[64,234,144,290]}
+{"kind":"textbox","id":"sh/ru98fytw","slide":9,"text":"① Breadcrumb / 화면명 / 화면 ID","textPreview":"① Breadcrumb / 화면명 / 화면 ID","textChars":26,"textLines":1,"bbox":[248,222,570,34]}
+{"kind":"textbox","id":"sh/q90rmtcb","slide":9,"text":"② 조회조건·도구 영역","textPreview":"② 조회조건·도구 영역","textChars":12,"textLines":1,"bbox":[248,272,570,54]}
+{"kind":"textbox","id":"sh/dwrahobm","slide":9,"text":"③ 본문: 목록·상세·폼","textPreview":"③ 본문: 목록·상세·폼","textChars":13,"textLines":1,"bbox":[248,342,350,210]}
+{"kind":"textbox","id":"sh/cvi9oju1","slide":9,"text":"④ 선택 상세\nDrawer / Split pane","textPreview":"④ 선택 상세 | Drawer / Split pane","textChars":27,"textLines":2,"bbox":[614,342,204,210]}
+{"kind":"textbox","id":"sh/7e583utc","slide":9,"text":"⑤ 상태·traceId·기준시각","textPreview":"⑤ 상태·traceId·기준시각","textChars":17,"textLines":1,"bbox":[248,568,570,34]}
+{"kind":"textbox","id":"sh/6dw7apcr","slide":9,"text":"공통 규칙","textPreview":"공통 규칙","textChars":5,"textLines":1,"bbox":[910,150,280,32]}
+{"kind":"textbox","id":"sh/at4bixwf","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,200,20,50]}
+{"kind":"textbox","id":"sh/vudcb2d0","slide":9,"text":"헤더: 환경·알림·세션 상태 제공","textPreview":"헤더: 환경·알림·세션 상태 제공","textChars":18,"textLines":1,"bbox":[933,200,257,50]}
+{"kind":"textbox","id":"sh/wvmtk7el","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,250,20,50]}
+{"kind":"textbox","id":"sh/xwvudcv6","slide":9,"text":"좌측 메뉴: 역할별 항목만 노출","textPreview":"좌측 메뉴: 역할별 항목만 노출","textChars":17,"textLines":1,"bbox":[933,250,257,50]}
+{"kind":"textbox","id":"sh/mpkbexwj","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,300,20,50]}
+{"kind":"textbox","id":"sh/nqdc7id4","slide":9,"text":"Breadcrumb: 직접 URL 진입에도 생성","textPreview":"Breadcrumb: 직접 URL 진입에도 생성","textChars":26,"textLines":1,"bbox":[933,300,257,50]}
+{"kind":"textbox","id":"sh/8rmtgne9","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,350,20,50]}
+{"kind":"textbox","id":"sh/9svu9svu","slide":9,"text":"화면명 옆에 화면 ID 표시","textPreview":"화면명 옆에 화면 ID 표시","textChars":15,"textLines":1,"bbox":[933,350,257,50]}
+{"kind":"textbox","id":"sh/y1kbadw7","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,400,20,50]}
+{"kind":"textbox","id":"sh/z2tc3ids","slide":9,"text":"목록 선택은 URL로 복원 가능","textPreview":"목록 선택은 URL로 복원 가능","textChars":17,"textLines":1,"bbox":[933,400,257,50]}
+{"kind":"textbox","id":"sh/hgjepgfa","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,450,20,50]}
+{"kind":"textbox","id":"sh/gfqxgbyp","slide":9,"text":"Drawer 닫으면 목록 필터·스크롤 유지","textPreview":"Drawer 닫으면 목록 필터·스크롤 유지","textChars":23,"textLines":1,"bbox":[933,450,257,50]}
+{"kind":"textbox","id":"sh/fehwn6xk","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,500,20,50]}
+{"kind":"textbox","id":"sh/ut8fe1gz","slide":9,"text":"명령 버튼은 본문 우상단에 정렬","textPreview":"명령 버튼은 본문 우상단에 정렬","textChars":17,"textLines":1,"bbox":[933,500,257,50]}
+{"kind":"textbox","id":"sh/tszelgfe","slide":9,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[910,550,20,50]}
+{"kind":"textbox","id":"sh/srqxcbyt","slide":9,"text":"traceId는 오류·문의 시 노출","textPreview":"traceId는 오류·문의 시 노출","textChars":19,"textLines":1,"bbox":[933,550,257,50]}
+{"kind":"notes","id":"nt/ocguuh","slide":9,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/t3tfhy","slide":10,"title":"06. 공통 조회·그리드 기준","textShapes":29}
+{"kind":"shape","id":"sh/a5k7e1kb","slide":10,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/x8vqpw3m","slide":10,"text":"06. 공통 조회·그리드 기준","textPreview":"06. 공통 조회·그리드 기준","textChars":16,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/w72pgb21","slide":10,"text":"조회조건과 그리드 상태는 URL과 서버 기준으로 유지한다","textPreview":"조회조건과 그리드 상태는 URL과 서버 기준으로 유지한다","textChars":31,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/n2tojmlk","slide":10,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/m1k7ahkz","slide":10,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/94bqlw3q","slide":10,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/o32pcr25","slide":10,"text":"10 / 14","textPreview":"10 / 14","textChars":7,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"shape","id":"sh/7yd8vqlo","slide":10,"bbox":[46,150,790,88]}
+{"kind":"textbox","id":"sh/6x47mlkj","slide":10,"text":"기간","textPreview":"기간","textChars":2,"textLines":1,"bbox":[64,162,60,28]}
+{"kind":"shape","id":"sh/czytor2l","slide":10,"bbox":[126,162,190,30]}
+{"kind":"textbox","id":"sh/x07ahw36","slide":10,"text":"상태","textPreview":"상태","textChars":2,"textLines":1,"bbox":[336,162,60,28]}
+{"kind":"shape","id":"sh/axgbm1kf","slide":10,"bbox":[396,162,160,30]}
+{"kind":"textbox","id":"sh/bypsfml0","slide":10,"text":"검색","textPreview":"검색","textChars":2,"textLines":1,"bbox":[666,162,70,30]}
+{"kind":"textbox","id":"sh/ovetkr2p","slide":10,"text":"초기화","textPreview":"초기화","textChars":3,"textLines":1,"bbox":[746,162,70,30]}
+{"kind":"textbox","id":"sh/pwnadw3a","slide":10,"text":"적용 조건: status=OPEN · from=2026-08-01 · sort=submittedAt,desc","textPreview":"적용 조건: status=OPEN · from=2026-08-01 · sort=submittedAt,desc","textChars":60,"textLines":1,"bbox":[64,202,740,24]}
+{"kind":"textbox","id":"sh/3u5sbml4","slide":10,"text":"총 1,284건 · 표시 1–20","textPreview":"총 1,284건 · 표시 1–20","textChars":18,"textLines":1,"bbox":[46,510,300,30]}
+{"kind":"textbox","id":"sh/gre9g7md","slide":10,"text":"이전  1  2  3  …  다음","textPreview":"이전  1  2  3  …  다음","textChars":18,"textLines":1,"bbox":[566,510,270,30]}
+{"kind":"textbox","id":"sh/1sna9c3y","slide":10,"text":"필수 동작","textPreview":"필수 동작","textChars":5,"textLines":1,"bbox":[880,150,300,32]}
+{"kind":"textbox","id":"sh/hofqd8v2","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,198,20,43]}
+{"kind":"textbox","id":"sh/gn69k3eh","slide":10,"text":"검색: Enter 또는 검색 버튼","textPreview":"검색: Enter 또는 검색 버튼","textChars":18,"textLines":1,"bbox":[903,198,287,43]}
+{"kind":"textbox","id":"sh/vmx8bydw","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,241,20,43]}
+{"kind":"textbox","id":"sh/ul47itwb","slide":10,"text":"초기화: 기본값 복원 후 즉시 조회","textPreview":"초기화: 기본값 복원 후 즉시 조회","textChars":19,"textLines":1,"bbox":[903,241,287,43]}
+{"kind":"textbox","id":"sh/tkvq9ovq","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,284,20,43]}
+{"kind":"textbox","id":"sh/8jmpg3e5","slide":10,"text":"필터·정렬·선택 ID는 URL에 저장","textPreview":"필터·정렬·선택 ID는 URL에 저장","textChars":20,"textLines":1,"bbox":[903,284,287,43]}
+{"kind":"textbox","id":"sh/7yd87ydk","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,327,20,43]}
+{"kind":"textbox","id":"sh/6x47etwz","slide":10,"text":"서버 정렬·cursor pagination 사용","textPreview":"서버 정렬·cursor pagination 사용","textChars":26,"textLines":1,"bbox":[903,327,287,43]}
+{"kind":"textbox","id":"sh/dgzqlsvu","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,370,20,43]}
+{"kind":"textbox","id":"sh/sfq9snep","slide":10,"text":"재조회 중 기존 결과는 유지하고 표시","textPreview":"재조회 중 기존 결과는 유지하고 표시","textChars":20,"textLines":1,"bbox":[903,370,287,43]}
+{"kind":"textbox","id":"sh/apgfql8v","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,413,20,43]}
+{"kind":"textbox","id":"sh/bq9wzqpg","slide":10,"text":"API 오류와 0건 결과를 구분","textPreview":"API 오류와 0건 결과를 구분","textChars":17,"textLines":1,"bbox":[903,413,287,43]}
+{"kind":"textbox","id":"sh/crixsvql","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,456,20,43]}
+{"kind":"textbox","id":"sh/xsre1076","slide":10,"text":"열 너비·고정·밀도는 사용자별 저장","textPreview":"열 너비·고정·밀도는 사용자별 저장","textChars":19,"textLines":1,"bbox":[903,456,287,43]}
+{"kind":"textbox","id":"sh/2lgvml8j","slide":10,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[880,499,20,43]}
+{"kind":"textbox","id":"sh/nmpwvqp4","slide":10,"text":"대량 export는 비동기 작업으로 처리","textPreview":"대량 export는 비동기 작업으로 처리","textChars":22,"textLines":1,"bbox":[903,499,287,43]}
+{"kind":"shape","id":"sh/onydovqp","slide":10,"bbox":[880,580,330,48]}
+{"kind":"textbox","id":"sh/po7exg7a","slide":10,"text":"금지: 전체 데이터를 내려받아 브라우저에서 필터","textPreview":"금지: 전체 데이터를 내려받아 브라우저에서 필터","textChars":26,"textLines":1,"bbox":[892,586,306,36]}
+{"kind":"table","id":"tb/hovq1s7e","slide":10,"name":"","rows":5,"cols":7,"preview":"선택 | 번호 | 상태 | 대상 | 담당자 | 제출시각 | 작업","bbox":[46,252,790,248]}
+{"kind":"notes","id":"nt/t3tfhy","slide":10,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/5exns2","slide":11,"title":"07. 공통 폼·검증 기준","textShapes":23}
+{"kind":"shape","id":"sh/tg32x8nq","slide":11,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/6tsjmdoz","slide":11,"text":"07. 공통 폼·검증 기준","textPreview":"07. 공통 폼·검증 기준","textChars":14,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/ru1kvi5k","slide":11,"text":"입력값 검증과 저장 충돌은 단계별로 구분해 안내한다","textPreview":"입력값 검증과 저장 충돌은 단계별로 구분해 안내한다","textChars":28,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/gjulsn6h","slide":11,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/1k321sn2","slide":11,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/ehcjqdob","slide":11,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/filkzi5w","slide":11,"text":"11 / 14","textPreview":"11 / 14","textChars":7,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"shape","id":"sh/wnq1gj6x","slide":11,"bbox":[46,160,210,112]}
+{"kind":"textbox","id":"sh/hoz2poni","slide":11,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[60,174,36,30]}
+{"kind":"textbox","id":"sh/98fmhs7y","slide":11,"text":"입력","textPreview":"입력","textChars":2,"textLines":1,"bbox":[104,169,135,32]}
+{"kind":"textbox","id":"sh/o7658n6d","slide":11,"text":"필수·형식·길이","textPreview":"필수·형식·길이","textChars":8,"textLines":1,"bbox":[60,211,182,48]}
+{"kind":"textbox","id":"sh/n6x4fips","slide":11,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[256,191,26,40]}
+{"kind":"shape","id":"sh/mlon6do7","slide":11,"bbox":[282,160,210,112]}
+{"kind":"textbox","id":"sh/xczmls7u","slide":11,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[296,174,36,30]}
+{"kind":"textbox","id":"sh/wb65cn6p","slide":11,"text":"클라이언트 검증","textPreview":"클라이언트 검증","textChars":8,"textLines":1,"bbox":[340,169,135,32]}
+{"kind":"textbox","id":"sh/bax4jip4","slide":11,"text":"즉시 확인 가능한 오류","textPreview":"즉시 확인 가능한 오류","textChars":12,"textLines":1,"bbox":[296,211,182,48]}
+{"kind":"textbox","id":"sh/a9onaxoj","slide":11,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[492,191,26,40]}
+{"kind":"shape","id":"sh/lgzmpcn6","slide":11,"bbox":[518,160,210,112]}
+{"kind":"textbox","id":"sh/kfq5g76l","slide":11,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[532,174,36,30]}
+{"kind":"textbox","id":"sh/4jypsbex","slide":11,"text":"서버 검증","textPreview":"서버 검증","textChars":5,"textLines":1,"bbox":[576,169,135,32]}
+{"kind":"textbox","id":"sh/5k76lgv2","slide":11,"text":"권한·업무 규칙·최신 상태","textPreview":"권한·업무 규칙·최신 상태","textChars":14,"textLines":1,"bbox":[532,211,182,48]}
+{"kind":"textbox","id":"sh/ihg7q1wr","slide":11,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[728,191,26,40]}
+{"kind":"shape","id":"sh/3ipoj6dc","slide":11,"bbox":[754,160,210,112]}
+{"kind":"textbox","id":"sh/snypgvet","slide":11,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[768,174,36,30]}
+{"kind":"textbox","id":"sh/dor6pgve","slide":11,"text":"저장","textPreview":"저장","textChars":2,"textLines":1,"bbox":[812,169,135,32]}
+{"kind":"textbox","id":"sh/qlg7elwn","slide":11,"text":"멱등 키 · version","textPreview":"멱등 키 · version","textChars":14,"textLines":1,"bbox":[768,211,182,48]}
+{"kind":"textbox","id":"sh/rmponqd8","slide":11,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[964,191,26,40]}
+{"kind":"shape","id":"sh/8re5krep","slide":11,"bbox":[990,160,210,112]}
+{"kind":"textbox","id":"sh/tsn6dwva","slide":11,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1004,174,36,30]}
+{"kind":"textbox","id":"sh/b6tsjuxs","slide":11,"text":"결과","textPreview":"결과","textChars":2,"textLines":1,"bbox":[1048,169,135,32]}
+{"kind":"textbox","id":"sh/a5krqpg7","slide":11,"text":"성공·409·부분 실패","textPreview":"성공·409·부분 실패","textChars":12,"textLines":1,"bbox":[1004,211,182,48]}
+{"kind":"table","id":"tb/qt0zepsv","slide":11,"name":"","rows":7,"cols":3,"preview":"구분 | 화면 동작 | 메시지·처리 기준","bbox":[46,310,1188,290]}
+{"kind":"notes","id":"nt/5exns2","slide":11,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/8hgsvm","slide":12,"title":"08. 공통 버튼·팝업·명령 기준","textShapes":15}
+{"kind":"shape","id":"sh/bu1knul0","slide":12,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/cva1wz2l","slide":12,"text":"08. 공통 버튼·팝업·명령 기준","textPreview":"08. 공통 버튼·팝업·명령 기준","textChars":18,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/xw32p43q","slide":12,"text":"버튼과 팝업은 위험도에 따라 확인·사유·재인증을 강화한다","textPreview":"버튼과 팝업은 위험도에 따라 확인·사유·재인증을 강화한다","textChars":31,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/25sjqpk3","slide":12,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/n61kjulo","slide":12,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/o7a1sz29","slide":12,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/p8j2lk3u","slide":12,"text":"12 / 14","textPreview":"12 / 14","textChars":7,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"textbox","id":"sh/m1c329kn","slide":12,"text":"버튼 우선순위","textPreview":"버튼 우선순위","textChars":7,"textLines":1,"bbox":[46,146,240,30]}
+{"kind":"textbox","id":"sh/72lkvel8","slide":12,"text":"승인","textPreview":"승인","textChars":2,"textLines":1,"bbox":[46,196,120,40]}
+{"kind":"textbox","id":"sh/jqhobq1w","slide":12,"text":"임시저장","textPreview":"임시저장","textChars":4,"textLines":1,"bbox":[180,196,130,40]}
+{"kind":"textbox","id":"sh/yp872lkb","slide":12,"text":"반려","textPreview":"반려","textChars":2,"textLines":1,"bbox":[324,196,120,40]}
+{"kind":"textbox","id":"sh/5sj6d0j2","slide":12,"text":"사용불가","textPreview":"사용불가","textChars":4,"textLines":1,"bbox":[458,196,130,40]}
+{"kind":"textbox","id":"sh/krqp4v2h","slide":12,"text":"한 작업 영역의 주요 버튼은 1개를 원칙으로 하며, 파괴적 명령은 색과 문구로 분리한다.","textPreview":"한 작업 영역의 주요 버튼은 1개를 원칙으로 하며, 파괴적 명령은 색과 문구로 분리한다.","textChars":49,"textLines":1,"bbox":[46,252,710,34]}
+{"kind":"textbox","id":"sh/7u1ofa18","slide":12,"text":"고위험 상태 변경 팝업","textPreview":"고위험 상태 변경 팝업","textChars":12,"textLines":1,"bbox":[800,146,360,30]}
+{"kind":"shape","id":"sh/6ts765kn","slide":12,"bbox":[800,188,414,218]}
+{"kind":"textbox","id":"sh/tgj6hkjy","slide":12,"text":"예외 환불을 승인하시겠습니까?","textPreview":"예외 환불을 승인하시겠습니까?","textChars":16,"textLines":1,"bbox":[824,206,366,34]}
+{"kind":"textbox","id":"sh/svap8f2t","slide":12,"text":"대상: BK-20260818-1042\n현재 실결제액: 90,000원\n기환불액: 0원\n요청 환불액: 90,000원\n후속 효과: 환불 실행 + 정산 조정 생성","textPreview":"대상: BK-20260818-1042 | 현재 실결제액: 90,000원 | 기환불액: 0원 | 요청 환불액: 90,000원 | 후속 효과: 환불 실행 + 정산 조정 생성","textChars":86,"textLines":5,"bbox":[824,248,366,96]}
+{"kind":"textbox","id":"sh/fi18ja14","slide":12,"text":"취소","textPreview":"취소","textChars":2,"textLines":1,"bbox":[956,352,98,36]}
+{"kind":"textbox","id":"sh/uhs7apkj","slide":12,"text":"재인증 후 승인","textPreview":"재인증 후 승인","textChars":8,"textLines":1,"bbox":[1064,352,126,36]}
+{"kind":"table","id":"tb/1cba9kju","slide":12,"name":"","rows":5,"cols":4,"preview":"위험도 | 필수 확인 | 추가 통제 | 대표 명령","bbox":[46,430,1188,182]}
+{"kind":"notes","id":"nt/8hgsvm","slide":12,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/i3mckg","slide":13,"title":"09. 공통 상태·오류·세션 기준","textShapes":20}
+{"kind":"shape","id":"sh/0jyhsvmh","slide":13,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/zip0zq5w","slide":13,"text":"09. 공통 상태·오류·세션 기준","textPreview":"09. 공통 상태·오류·세션 기준","textChars":18,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/ehgzq54r","slide":13,"text":"로딩·빈 결과·오류·실시간 단절을 서로 다른 상태로 설계한다","textPreview":"로딩·빈 결과·오류·실시간 단절을 서로 다른 상태로 설계한다","textChars":33,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/9o7i5kne","slide":13,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/ony1wfmt","slide":13,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/nmp03a58","slide":13,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/mlgju54n","slide":13,"text":"13 / 14","textPreview":"13 / 14","textChars":7,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"shape","id":"sh/wbi10fmp","slide":13,"bbox":[835,148,399,390]}
+{"kind":"textbox","id":"sh/2d0nator","slide":13,"text":"실시간 큐·세션","textPreview":"실시간 큐·세션","textChars":8,"textLines":1,"bbox":[865,174,335,34]}
+{"kind":"textbox","id":"sh/3e9o3ypc","slide":13,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[865,225,20,42]}
+{"kind":"textbox","id":"sh/ofi5c36x","slide":13,"text":"SSE 연결 상태를 헤더에 표시한다.","textPreview":"SSE 연결 상태를 헤더에 표시한다.","textChars":20,"textLines":1,"bbox":[888,225,307,42]}
+{"kind":"textbox","id":"sh/pgr65872","slide":13,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[865,267,20,42]}
+{"kind":"textbox","id":"sh/ah0nedon","slide":13,"text":"단절 시 마지막 수신 시각을 표시한다.","textPreview":"단절 시 마지막 수신 시각을 표시한다.","textChars":21,"textLines":1,"bbox":[888,267,307,42]}
+{"kind":"textbox","id":"sh/bi9o7ip8","slide":13,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[865,309,20,42]}
+{"kind":"textbox","id":"sh/c325gn6t","slide":13,"text":"재연결 후 cursor 이후 누락분을 조회한다.","textPreview":"재연결 후 cursor 이후 누락분을 조회한다.","textChars":26,"textLines":1,"bbox":[888,309,307,42]}
+{"kind":"textbox","id":"sh/x4b69s7e","slide":13,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[865,351,20,42]}
+{"kind":"textbox","id":"sh/6lgn29oj","slide":13,"text":"중복 사건은 eventId로 제거한다.","textPreview":"중복 사건은 eventId로 제거한다.","textChars":21,"textLines":1,"bbox":[888,351,307,42]}
+{"kind":"textbox","id":"sh/rmp4vep4","slide":13,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[865,393,20,42]}
+{"kind":"textbox","id":"sh/ve1cnq1k","slide":13,"text":"새 항목이 현재 스크롤을 밀지 않는다.","textPreview":"새 항목이 현재 스크롤을 밀지 않는다.","textChars":21,"textLines":1,"bbox":[888,393,307,42]}
+{"kind":"textbox","id":"sh/adsbel0z","slide":13,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[865,435,20,42]}
+{"kind":"textbox","id":"sh/xg3up0jq","slide":13,"text":"유휴 만료와 절대 만료를 구분한다.","textPreview":"유휴 만료와 절대 만료를 구분한다.","textChars":19,"textLines":1,"bbox":[888,435,307,42]}
+{"kind":"textbox","id":"sh/wfutgvi5","slide":13,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[865,477,20,42]}
+{"kind":"textbox","id":"sh/na1sj61o","slide":13,"text":"고위험 명령은 재로그인 후 자동 재전송하지 않는다.","textPreview":"고위험 명령은 재로그인 후 자동 재전송하지 않는다.","textChars":28,"textLines":1,"bbox":[888,477,307,42]}
+{"kind":"shape","id":"sh/m9sba103","slide":13,"bbox":[46,565,1188,62]}
+{"kind":"textbox","id":"sh/9cjulgje","slide":13,"text":"멱등성이 확인되지 않은 승인·환불·역할 변경은 브라우저가 임의로 자동 재시도하지 않는다.","textPreview":"멱등성이 확인되지 않은 승인·환불·역할 변경은 브라우저가 임의로 자동 재시도하지 않는다.","textChars":49,"textLines":1,"bbox":[62,575,1156,42]}
+{"kind":"table","id":"tb/sj2xwru9","slide":13,"name":"","rows":9,"cols":3,"preview":"상태 | 표시 원칙 | 사용자 행동","bbox":[46,148,750,390]}
+{"kind":"notes","id":"nt/i3mckg","slide":13,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}
+{"kind":"slide","id":"sl/0839u3","slide":14,"title":"10. 권한·개인정보·감사·접근성","textShapes":22}
+{"kind":"shape","id":"sh/ap4ja1sv","slide":14,"bbox":[0,0,1280,16]}
+{"kind":"textbox","id":"sh/xsv2lwb6","slide":14,"text":"10. 권한·개인정보·감사·접근성","textPreview":"10. 권한·개인정보·감사·접근성","textChars":18,"textLines":1,"bbox":[46,29,240,22]}
+{"kind":"textbox","id":"sh/crm1cral","slide":14,"text":"이 공통 기준을 통과한 뒤 화면별 상세설계를 시작한다","textPreview":"이 공통 기준을 통과한 뒤 화면별 상세설계를 시작한다","textChars":29,"textLines":1,"bbox":[46,55,1188,52]}
+{"kind":"shape","id":"sh/nmtkfmt4","slide":14,"bbox":[46,116,1188,0]}
+{"kind":"shape","id":"sh/2lkj6hsj","slide":14,"bbox":[46,684,1188,0]}
+{"kind":"textbox","id":"sh/pob2hwba","slide":14,"text":"DayLink Ops 화면설계서 · v1.0","textPreview":"DayLink Ops 화면설계서 · v1.0","textChars":24,"textLines":1,"bbox":[46,689,360,20]}
+{"kind":"textbox","id":"sh/on218rap","slide":14,"text":"14 / 14","textPreview":"14 / 14","textChars":7,"textLines":1,"bbox":[1130,689,104,20]}
+{"kind":"shape","id":"sh/mho3ils3","slide":14,"bbox":[790,148,444,410]}
+{"kind":"textbox","id":"sh/0fydgvu5","slide":14,"text":"상세 화면설계 착수 조건","textPreview":"상세 화면설계 착수 조건","textChars":13,"textLines":1,"bbox":[820,176,384,34]}
+{"kind":"textbox","id":"sh/l07ep0ba","slide":14,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[820,228,20,43]}
+{"kind":"textbox","id":"sh/ydgvelcz","slide":14,"text":"화면 ID와 메뉴 경로 승인","textPreview":"화면 ID와 메뉴 경로 승인","textChars":15,"textLines":1,"bbox":[843,228,337,43]}
+{"kind":"textbox","id":"sh/zepcnqtk","slide":14,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[820,271,20,43]}
+{"kind":"textbox","id":"sh/cbydcbut","slide":14,"text":"대표 역할과 직접 URL 권한 승인","textPreview":"대표 역할과 직접 URL 권한 승인","textChars":19,"textLines":1,"bbox":[843,271,337,43]}
+{"kind":"textbox","id":"sh/dc7ulgbe","slide":14,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[820,314,20,43]}
+{"kind":"textbox","id":"sh/q9wvalcn","slide":14,"text":"LIST ↔ DETAIL ↔ POP 연결 승인","textPreview":"LIST ↔ DETAIL ↔ POP 연결 승인","textChars":25,"textLines":1,"bbox":[843,314,337,43]}
+{"kind":"textbox","id":"sh/bapcj6t8","slide":14,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[820,357,20,43]}
+{"kind":"textbox","id":"sh/o7ed8bux","slide":14,"text":"공통 조회·저장·오류 규칙 승인","textPreview":"공통 조회·저장·오류 규칙 승인","textChars":17,"textLines":1,"bbox":[843,357,337,43]}
+{"kind":"textbox","id":"sh/p8nuhgbi","slide":14,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[820,400,20,43]}
+{"kind":"textbox","id":"sh/5sf2p8zu","slide":14,"text":"공통 메시지 코드 체계 승인","textPreview":"공통 메시지 코드 체계 승인","textChars":15,"textLines":1,"bbox":[843,400,337,43]}
+{"kind":"textbox","id":"sh/krm1w3i9","slide":14,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[820,443,20,43]}
+{"kind":"textbox","id":"sh/jqdknyho","slide":14,"text":"API 상태·오류 코드 초안 확보","textPreview":"API 상태·오류 코드 초안 확보","textChars":18,"textLines":1,"bbox":[843,443,337,43]}
+{"kind":"textbox","id":"sh/ip4jut0j","slide":14,"text":"•","textPreview":"•","textChars":1,"textLines":1,"bbox":[820,486,20,43]}
+{"kind":"textbox","id":"sh/xov2lozy","slide":14,"text":"P0 화면 우선순위 확정","textPreview":"P0 화면 우선순위 확정","textChars":13,"textLines":1,"bbox":[843,486,337,43]}
+{"kind":"textbox","id":"sh/wnm1sjid","slide":14,"text":"다음 산출물","textPreview":"다음 산출물","textChars":6,"textLines":1,"bbox":[820,528,130,30]}
+{"kind":"textbox","id":"sh/vmdkjyhs","slide":14,"text":"P0 화면별 와이어프레임 + 번호별 상세 기능 설명","textPreview":"P0 화면별 와이어프레임 + 번호별 상세 기능 설명","textChars":28,"textLines":1,"bbox":[964,526,240,34]}
+{"kind":"textbox","id":"sh/a14jqt07","slide":14,"text":"화면별 설명에는 표시조건·입력검증·처리순서·권한·메시지·예외·연결 API를 작성한다.","textPreview":"화면별 설명에는 표시조건·입력검증·처리순서·권한·메시지·예외·연결 API를 작성한다.","textChars":47,"textLines":1,"bbox":[46,585,1188,44]}
+{"kind":"table","id":"tb/ml0329gj","slide":14,"name":"","rows":8,"cols":3,"preview":"영역 | 공통 기준 | 검증 포인트","bbox":[46,148,704,410]}
+{"kind":"notes","id":"nt/0839u3","slide":14,"text":"[Sources]\n- /Users/game/study/toy/portfolio/03-DayLink-운영자센터-React-PRD.md\n- /Users/game/study/toy/portfolio/00-DayLink-PRD-개요.md"}

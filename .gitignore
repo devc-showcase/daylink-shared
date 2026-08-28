@@ -1,0 +1,26 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# 편집기
+.idea/
+.vscode/
+*.swp
+
+# Node
+node_modules/
+dist/
+.npmrc.local
+
+# 생성물
+/contract/generated/
+*.tsbuildinfo
+
+# 테스트
+/e2e/test-results/
+/e2e/playwright-report/
+/e2e/.auth/
+
+# 임시
+*.log
+tmp/
