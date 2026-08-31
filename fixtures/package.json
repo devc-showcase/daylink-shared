@@ -1,6 +1,6 @@
 {
   "name": "@devc-showcase/fixtures",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DayLink 시드 데이터와 테스트 계정. 다섯 저장소가 같은 값을 본다.",
   "license": "UNLICENSED",
   "type": "module",
