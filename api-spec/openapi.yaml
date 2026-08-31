@@ -3,7 +3,8 @@
 # 이 파일이 명세의 원본이다. 네 프론트 구현과 Core API가 여기서 타입을 생성한다.
 # 06 §9.1 명세 우선 — 스키마와 오류 코드를 코드보다 먼저 확정한다.
 #
-# 상태: 뼈대 + 본보기 1건. 나머지 엔드포인트는 직접 채운다.
+# 상태: 뼈대 + 작성 완료 2건(POST /holds, GET /holds/{holdId}).
+#       나머지 엔드포인트는 직접 채운다.
 #       채울 목록과 판단 기준은 design-checklist.md 참조.
 
 openapi: 3.1.0
@@ -37,6 +38,8 @@ tags:
     description: 예약·결제·취소
   - name: checkin
     description: 출석·체크인
+  - name: slot
+    description: 회차·정원
   - name: settlement
     description: 정산 원장
 
@@ -129,30 +132,772 @@ paths:
   # 각 항목의 판단 기준은 design-checklist.md에 있다.
   # ═══════════════════════════════════════════════════════════
 
-  # /holds/{holdId}:
-  #   get:    확보 상태 조회 — 만료됐는지 확인
-  #   delete: 확보 해제 — 00 §7.2의 RELEASED 전이
+  /holds/{holdId}:
+    get:
+      tags: [hold]
+      summary: 재고 임시 확보 조회
+      operationId: getHold
+      description: |
+        확보 하나의 **현재 상태**를 서버 기준으로 알려준다.
 
-  # /bookings:
-  #   post:   결제 제출 → 예약 생성 (B2C-AC-05 중복 방지)
-  #           생각할 것: 응답이 유실됐을 때 클라이언트가 어떻게 복구하나?
+        **왜 이 엔드포인트가 필요한가.**
+        클라이언트는 생성 응답의 `expiresAt`으로 카운트다운을 돌린다. 그런데
+        그 타이머는 브라우저 시계로 도는 추정치다. 00 §7.2는 "10분 만료는
+        서버 시간을 기준으로 판단한다. 고객 화면의 타이머는 안내 수단이며
+        최종 권위가 아니다"라고 못박았다. 화면에 3분이 남아 있어도 서버는
+        이미 만료로 볼 수 있다.
 
-  # /bookings/{bookingId}:
-  #   get:    예약 상세 — 예약·결제·환불·출석 상태를 각각 별도 필드로(CORE-AC-09)
+        타이머가 놓치는 것이 하나 더 있다. 확보가 `ACTIVE`를 벗어나는 경로는
+        만료 말고도 있다 — 다른 탭에서 해제했거나(`RELEASED`), 다른 탭에서
+        결제로 넘어갔을 수 있다(`PAYMENT_PENDING` → `CONSUMED`). 타이머는
+        이런 전이를 전혀 모른다.
 
-  # /bookings/{bookingId}/cancel-quote:
-  #   get:    취소 예상액 — 서버 시각과 정책 스냅숏 기준, 기준 시각 포함(CORE-AC-07)
+        그래서 결제로 넘어가기 직전처럼 판단이 필요한 순간에 이걸 호출한다.
 
-  # /bookings/{bookingId}/cancellation:
-  #   post:   취소 실행 — 재전송이 중복 취소를 만들지 않아야 함(CORE-AC-08)
-  #           생각할 것: 취소와 환불은 다른 상태다(00 §7.3·7.4). 응답을 어떻게 나눌 것인가?
+        **멱등 키를 받지 않는다.**
+        조회는 부작용이 없다. `Idempotency-Key`는 쓰기 요청에만 붙인다(00 §8).
+        같은 요청을 몇 번 보내도 상태가 바뀌지 않으므로 재전송을 구분할
+        이유가 없다.
+      parameters:
+        - $ref: '#/components/parameters/HoldId'
+      responses:
+        '200':
+          description: |
+            조회 성공. **만료된 확보도 여기로 온다.**
 
-  # /check-ins:
-  #   post:   체크인 — clientEventId를 멱등 키로(CORE-AC-15)
-  #           생각할 것: 오프라인에서 만든 이벤트가 늦게 도착하면?(06 §11.2)
+            00 §7.2가 만료를 삭제가 아니라 `ACTIVE → EXPIRED` **상태 전이**로
+            정의했기 때문이다. 사라진 것이 아니라 상태가 바뀐 것이므로 404가
+            아니다. 클라이언트는 `status`를 보고 분기한다.
 
-  # /sessions/{sessionId}:
-  #   patch:  회차 수정 — 정원 축소 제한(CORE-AC-13)
+            그 결과 이 엔드포인트에서 404는 오직 "내 것이 아니거나 존재한 적
+            없음"만 뜻한다. 만료로는 404가 나오지 않는다. 네 프론트 구현이
+            같은 분기를 짜게 만드는 지점이다.
+
+            `quote`는 만료·해제된 확보에도 그대로 담긴다. `Hold` 스키마의
+            required이기 때문이다. 빼려면 optional로 바꿔야 하고, 그러면 네
+            구현 전부가 null 분기를 져야 한다. 스키마를 하나로 유지하는 편이 싸다.
+
+            다만 **만료·해제 상태의 `quote`는 실행할 수 없는 스냅숏이다.**
+            확보 당시의 금액을 화면에 표시하는 용도이지, 이 값으로 결제를
+            시작해서는 안 된다. 서버는 어차피 거부하지만, 그 이유를 여기 적어
+            두지 않으면 구현마다 다르게 추측한다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hold'
+        '404':
+          description: |
+            대상이 없다. `NOT_FOUND`.
+
+            **남의 확보를 조회한 경우도 여기로 온다. 403이 아니다.**
+            CORE-AC-10이 "다른 고객의 예약을 조회하면 **존재 여부를 노출하지
+            않고** 거부한다"고 요구하기 때문이다. 403은 "이건 있는데 네 것이
+            아니다"라고 말하는 것이라 존재를 확인해 준다. holdId를 바꿔가며
+            찔러보면 어떤 확보가 살아 있는지 알아낼 수 있다.
+
+            그래서 **존재하지 않는 확보와 남의 확보를 구분하지 않는다.**
+            응답 본문도 같아야 한다. 오류 메시지나 응답 시간으로 둘을 가를 수
+            있으면 감춘 의미가 없다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/ServerError' }
+        # 403을 두지 않은 것은 누락이 아니라 결정이다. 위 404 설명 참조.
+        # 403(FORBIDDEN_SCOPE)은 Admin 쪽에서 쓴다 — 행위자가 시스템 안에 있고
+        # 리소스의 존재 자체는 비밀이 아닐 때다(CORE-AC-11).
+
+  # ═══════════════════════════════════════════════════════════
+  # 확보 해제 — DELETE가 아니라 POST다.
+  #
+  # 00 §7.2·06 §5는 RELEASED를 상태 전이로 정의한다. 리소스는 남고
+  # 해제 후에도 GET /holds/{holdId}가 200을 준다. DELETE라는 동사는
+  # "지웠다"고 말하는데 실제로는 지우지 않으므로 계약이 거짓말을 한다.
+  # 생성기가 만드는 이름도 deleteHold()가 되어 같은 오해를 옮긴다.
+  #
+  # 반론: DELETE가 REST 관례이고 경로가 짧다. 그럼에도 POST를 고른 이유는
+  # 이 계약을 네 구현이 각자 읽기 때문이다. 동사가 상태 모델과 어긋나면
+  # 구현마다 다르게 해석한다(06 §9.1).
+  # ═══════════════════════════════════════════════════════════
+  /holds/{holdId}/release:
+    post:
+      tags: [hold]
+      summary: 재고 임시 확보 해제
+      operationId: releaseHold
+      description: |
+        확보를 `RELEASED`로 전이하고 좌석을 되돌린다. 고객이 주문 확인 화면을
+        벗어나거나 회차를 다시 고를 때 호출한다.
+
+        **이미 `RELEASED`인 확보에 다시 요청하면 200이다.**
+        06 §8.2의 멱등 규칙을 상태 전이에 적용한 결과다. 요청의 목적은
+        "이 확보를 해제 상태로 만들어라"이고, 이미 그 상태이므로 목적은
+        이미 이뤄져 있다. 오류를 주면 클라이언트가 재시도 실패로 오해한다.
+
+        **`CONSUMED`인 확보에 요청하면 409다. 위와 답이 다르다.**
+        06 §5의 전이 표에 `CONSUMED → RELEASED`가 없다. 결제까지 끝난 확보의
+        좌석을 되돌리면 예약이 좌석 없이 남고, 그 좌석을 다른 고객이 가져가면
+        06 §10의 "확정 인원 > 회차 정원 불가"가 깨진다.
+
+        두 경우의 차이는 **출발 상태**다. 앞은 이미 목적지에 있고, 뒤는 다른
+        곳에 있으면서 그리로 가는 길이 없다.
+      parameters:
+        - $ref: '#/components/parameters/HoldId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: |
+            해제 성공. 최초 해제와 재요청 모두 여기로 온다.
+
+            204가 아니라 본문을 담는 이유는 클라이언트가 `status`와
+            `releasedAt`을 곧바로 확인하기 위해서다. 204를 주면 화면을 그리려고
+            GET을 한 번 더 불러야 한다. 왕복 하나를 아끼는 쪽을 골랐다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hold'
+        '409':
+          description: |
+            `INVALID_STATE_TRANSITION`. `CONSUMED`·`EXPIRED`처럼 `RELEASED`로
+            가는 길이 없는 상태다.
+
+            `EXPIRED`도 여기다. 이미 좌석이 반환됐으므로 해제할 것이 없고,
+            06 §5 표에 `EXPIRED → RELEASED`도 없다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ═══════════════════════════════════════════════════════════
+  # 결제 제출 — 실패도 정상 응답이다.
+  # ═══════════════════════════════════════════════════════════
+  /bookings:
+    post:
+      tags: [booking]
+      summary: 결제 제출과 예약 생성
+      operationId: createBooking
+      description: |
+        확보를 소진해 예약을 만들고 모의 결제를 실행한다.
+
+        **결제 실패를 4xx로 주지 않는다.**
+        00 §7.3이 `PAYMENT_PENDING → PAYMENT_FAILED`를 예약 상태 전이로
+        정의했다. 결제가 거절돼도 예약 리소스는 만들어지고 상태가
+        `PAYMENT_FAILED`가 된다. 4xx로 잘라내면 예약이 생기지 않아
+        B2C-RSV-04의 "실패 사유 범주와 재시도 가능 여부를 표시한다"를
+        담을 곳이 없어진다. 사유는 `paymentFailureReason`에 담는다.
+
+        **"결과 불명"도 정상 응답이다.**
+        B2C-AC-06이 "재결제 대신 서버 상태를 조회한다"를 요구한다. 그래서
+        결과를 모르는 동안 201 + `bookingStatus: PAYMENT_PENDING`을 주고,
+        클라이언트는 `GET /bookings/{bookingId}`로 확인한다.
+
+        202를 쓰지 않은 이유는 이 응답이 "아직 안 만들었다"가 아니라
+        "만들었고 결제 결과가 아직이다"이기 때문이다. 리소스는 이미 있고
+        조회 경로도 있다. 상태를 HTTP 코드가 아니라 본문 필드에 두면
+        `PAYMENT_PENDING`·`CONFIRMED`·`PAYMENT_FAILED` 세 결과를 클라이언트가
+        한 자리에서 분기할 수 있다.
+
+        **오류로 남기는 것은 요청 자체가 성립하지 않을 때뿐이다.**
+        확보가 만료됐거나(409 `HOLD_EXPIRED`), 남의 확보이거나(404),
+        인원이 규칙을 벗어난 경우(422)다.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: |
+            예약 생성. `bookingStatus`로 결제 결과를 판정한다.
+
+            같은 멱등 키로 재전송하면 같은 201과 같은 본문을 돌려준다.
+            B2C-AC-05가 요구하는 "결제 버튼을 반복 선택해도 중복 생성되지
+            않는다"가 이 규칙으로 성립한다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '409':
+          description: |
+            `HOLD_EXPIRED` — 확보가 만료됐다. 새 확보를 만들어야 하므로
+            `retryable: false`다. B2C-AC-07의 "결제를 막고 회차 재선택을
+            안내한다"가 이 응답을 받고 일어난다.
+
+            `IDEMPOTENCY_IN_PROGRESS` — 같은 키가 처리 중이다. 이것만
+            `retryable: true`다.
+
+            `INVALID_STATE_TRANSITION` — 이미 소진된 확보다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: |
+            `VALIDATION_FAILED` 또는 `IDEMPOTENCY_KEY_REUSED`.
+            인원 범위(00 §6.2)와 쿠폰 유효성이 여기서 걸린다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /bookings/{bookingId}:
+    get:
+      tags: [booking]
+      summary: 예약 상세
+      operationId: getBooking
+      description: |
+        예약 하나의 현재 상태와 예약 시점 스냅숏을 돌려준다.
+        결제 응답이 유실됐을 때의 복구 경로이기도 하다(B2C-AC-06).
+
+        **네 상태를 각각 별도 필드로 낸다**(CORE-AC-09, 06 §5.1).
+        하나로 합치고 싶어지는 이유는 화면에 배지 하나만 있으면 편해서다.
+        합치면 표현할 수 없는 조합이 실제로 생긴다.
+
+        - 예약은 `CANCELLED`인데 환불이 `FAILED` — 06 §10이 명시적으로 허용한다
+        - 예약은 `CANCELLED`인데 출석이 `COMPLETE` — 06 §10이 충돌 대기열로 보낸다
+        - 예약은 `CONFIRMED`인데 출석이 `PARTIAL` — 일부 인원만 입장했다
+
+        배지 하나로 만들면 이런 상태에 이름을 붙일 수 없고, 결국 네 프론트가
+        각자 다른 우선순위로 하나를 골라 보여준다.
+
+        **스냅숏을 돌려준다. 현재 상품 정보가 아니다**(CORE-AC-25, 06 §4.2).
+        상품명·가격·정책이 나중에 바뀌어도 지난 예약의 표시와 환불 계산은
+        흔들리면 안 된다. 00 §6.2가 "가격, 상품 핵심 정보, 회차, 취소 정책은
+        예약 시점 스냅숏으로 저장한다"고 정했다.
+
+        현재 상품을 보고 싶으면 스냅숏 안의 `experienceId`로 따로 조회한다.
+        한 응답에 두 시점을 섞지 않는다.
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      responses:
+        '200':
+          description: 조회 성공
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: |
+            없거나 **다른 고객의 예약이다.** 403이 아니다.
+            B2C-AC-13과 CORE-AC-10이 존재 여부 비노출을 요구한다.
+            `GET /holds/{holdId}`와 같은 판단이다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /bookings/{bookingId}/cancel-quote:
+    get:
+      tags: [booking]
+      summary: 취소 예상액
+      operationId: getCancelQuote
+      description: |
+        지금 취소하면 얼마를 돌려받는지 서버가 계산해 준다.
+        B2C-AC-09와 B2C-CAN-01이 요구하는 화면의 입력이다.
+
+        **기준 시각을 응답에 담는다**(`calculatedAt`).
+        환불액을 바꾸는 것은 상품 가격이 아니라 **경과 시간**이다. 00 §6.4의
+        취소 정책은 체험 시작까지 남은 시간으로 환불률을 나눈다. STANDARD면
+        72시간 전 100%, 24시간 전 50%, 그 뒤 0%다. 같은 예약도 언제 묻느냐에
+        따라 답이 달라지므로, 금액만 주면 그 값이 언제 것인지 알 수 없다.
+
+        판정은 클라이언트 시각이 아니라 서버 시각으로 한다(06 §6.2).
+        정책은 현재 상품 정책이 아니라 예약에 저장된 스냅숏을 쓴다.
+
+        **`boundaryAt`으로 다음 경계를 함께 알려준다.**
+        고객이 이 화면을 열어둔 채 5분을 보내면 구간이 넘어갈 수 있다.
+        경계 시각을 주면 클라이언트가 남은 시간을 보여주고 만료 시 다시
+        조회할 수 있다. 이 값이 없으면 화면 금액이 소리 없이 낡는다.
+
+        경계를 넘긴 뒤 취소를 실행하면 서버가 막는다 —
+        `POST /bookings/{bookingId}/cancellation`의 `REFUND_QUOTE_STALE`이다.
+        여기서 알려주고, 거기서 다시 검증한다. 두 겹으로 둔 이유는 클라이언트
+        판정을 신뢰하지 않기 때문이다(06 §9.3).
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      responses:
+        '200':
+          description: 계산 성공
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelQuote'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: |
+            `INVALID_STATE_TRANSITION`. 취소할 수 없는 예약이다
+            (이미 `CANCELLED`이거나 `COMPLETED`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /bookings/{bookingId}/cancellation:
+    post:
+      tags: [booking]
+      summary: 취소 실행
+      operationId: cancelBooking
+      description: |
+        예약을 취소하고 환불을 시작한다.
+
+        **취소와 환불을 별도 필드로 낸다.**
+        00 §7.3과 §7.4는 서로 다른 상태 기계다. 취소는 서버가 즉시 확정할 수
+        있지만 환불은 외부 처리라 응답 시점에 끝나 있지 않다. 그래서 이 응답의
+        정상적인 모습은 `bookingStatus: CANCEL_PENDING` 또는 `CANCELLED`에
+        `refundStatus: REQUESTED`가 붙은 형태다.
+
+        06 §5.1이 "예약이 CANCELLED인데 환불이 FAILED일 수 있다"고 못박았다.
+        하나로 합치면 이 상태를 부를 이름이 없다. B2C-CAN-01의 "취소 완료와
+        환불 완료를 분리해 안내한다"가 이 구조를 요구한다.
+
+        **`expectedRefundAmount`를 필수로 받는다.**
+        방금 `cancel-quote`에서 본 금액을 함께 보내게 한다. 서버가 다시
+        계산해 다르면 409 `REFUND_QUOTE_STALE`로 막고 새 금액을 준다.
+        B2C-CAN-01이 "사용자가 명시적으로 동의한 뒤"를 요구하므로, 동의한
+        금액과 실제가 달라지면 동의를 다시 받아야 한다.
+
+        **재전송이 중복 취소를 만들지 않는 장치는 멱등 키다**(CORE-AC-08).
+        같은 키 + 같은 본문이면 저장된 응답을 그대로 돌려주고 새 환불을
+        만들지 않는다(06 §8.2). 다른 키로 이미 취소된 예약에 다시 요청하면
+        그건 재전송이 아니라 새 요청이므로 409 `INVALID_STATE_TRANSITION`이다.
+        이 둘을 구분하지 않으면 환불이 두 번 나간다.
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelBookingRequest'
+      responses:
+        '201':
+          description: |
+            취소 접수. 환불은 아직 진행 중일 수 있다.
+            같은 멱등 키 재전송도 같은 201과 같은 본문을 돌려준다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cancellation'
+        '409':
+          description: |
+            `REFUND_QUOTE_STALE` — 예상액이 서버 재계산 값과 다르다.
+            `details.currentQuote`에 새 계산을 담아 화면을 다시 그리게 한다.
+
+            `INVALID_STATE_TRANSITION` — 이미 취소됐거나 취소할 수 없는 예약.
+
+            `REFUND_IN_PROGRESS` — 이 예약의 환불이 외부에서 처리 중이다.
+            여기만 `retryable: true`다(ADM-AC-12).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: '`IDEMPOTENCY_KEY_REUSED` 또는 `VALIDATION_FAILED`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ═══════════════════════════════════════════════════════════
+  # 체크인 — 이 파일에서 가장 어려운 엔드포인트.
+  # 오프라인에서 만들어진 사실을 나중에 받는다.
+  # ═══════════════════════════════════════════════════════════
+  /check-ins:
+    post:
+      tags: [checkin]
+      summary: 체크인 이벤트 제출
+      operationId: submitCheckIn
+      security:
+        - adminAuth: []
+      description: |
+        현장에서 만들어진 체크인 이벤트를 서버에 반영한다.
+        온라인 즉시 처리와 오프라인 지연 전송이 같은 엔드포인트를 쓴다.
+
+        **멱등 키가 `Idempotency-Key` 헤더가 아니라 본문의 `clientEventId`다.**
+        다른 쓰기는 전부 헤더를 쓴다(06 §7). 여기만 예외인 이유는 두 키의
+        생명주기가 다르기 때문이다.
+
+        `Idempotency-Key`는 **요청을 보내려는 순간** 만들어진다. 한 번의 HTTP
+        요청과 그 재시도에 1:1로 붙고, 요청이 끝나면 역할이 끝난다.
+
+        `clientEventId`는 **현장에서 사건이 벌어진 순간** 만들어진다. 네트워크가
+        없는 상태에서 기기 안에 저장되고, 몇 분에서 몇 시간 뒤 연결이 돌아왔을
+        때 전송된다(02 §7 ADM-DSK-03). 즉 요청이 아니라 **사건**에 1:1로 붙는다.
+
+        차이가 실제로 드러나는 자리는 이렇다. 담당자가 오프라인에서 체크인을
+        하나 찍었는데 전송이 두 번 시도됐고, 그 사이 앱이 재시작돼 헤더 키가
+        새로 만들어졌다고 하자. 헤더 키로는 두 요청이 서로 다른 요청이라
+        출석이 두 번 기록된다. `clientEventId`는 사건에 붙어 있으므로 앱이
+        몇 번 재시작하든 같다. CORE-AC-15가 요구하는 "반복 전송해도 출석이
+        중복되지 않는다"는 사건 단위 키로만 성립한다.
+
+        **`clientRecordedAt`을 판정에 쓰지 않는다.**
+        기기 시계는 틀릴 수 있고 조작될 수도 있다. 00 §7.2가 hold 만료에서
+        클라이언트 시각을 거부한 것과 같은 이유다. 다만 오프라인 이벤트는
+        정의상 서버가 그 순간을 보지 못했으므로 값 자체는 감사 기록으로
+        저장한다. **저장하되 믿지 않는다.**
+
+        판정에 쓰는 시각은 둘이다 — 서버 수신 시각, 그리고 스냅숏의 마지막
+        동기화 시각이다. 후자로 2시간 규칙을 판정한다(06 §11.1).
+
+        **일곱 분기 중 넷은 오류가 아니다.**
+        오프라인 이벤트는 이미 벌어진 사실이다. 4xx로 잘라내면 06 §11.3의
+        "원본 이벤트를 삭제하지 않는다"가 깨진다. 자동 반영할 수 없는 것은
+        거부 대신 대기열로 접수한다. 분기별 판정은 errors.md의 체크인 표에 있다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckInRequest'
+      responses:
+        '200':
+          description: |
+            이미 반영된 사실을 확인해 준 경우다. 새 부작용이 없다.
+
+            `outcome: REPLAYED` — 같은 `clientEventId` 재전송.
+            06 §11.2가 "저장된 결과 반환"이라고 정했다.
+
+            `outcome: RECONCILED` — 다른 기기가 같은 인원을 이미 처리했다.
+            먼저 반영된 것까지만 인정하고 현재 공식 인원으로 교정한다.
+            **이것을 409로 주면 안 된다.** 담당자 화면에 실패가 뜨는데 출석은
+            정상 기록된 상태가 되기 때문이다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckInResult'
+        '201':
+          description: '`outcome: APPLIED`. 새 체크인이 반영됐다.'
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckInResult'
+        '202':
+          description: |
+            접수했으나 자동 반영하지 않았다. 사람이 판정해야 한다.
+
+            `outcome: QUEUED_CONFLICT` — 취소된 예약에 늦게 도착한 이벤트.
+            06 §11.2가 "자동 반영 금지, 충돌 대기열로"라고 정했다.
+
+            `outcome: QUEUED_QUARANTINE` — 권한이 회수된 행위자의 이벤트.
+            **403이 아닌 이유**는 403으로 거부하면 그 이벤트가 어디에도 남지
+            않기 때문이다. 06 §11.2는 격리 대기열로 보내라고 했다. 행위자의
+            권한 상실은 판정 대상이지 요청 형식의 문제가 아니다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckInResult'
+        '409':
+          description: |
+            일곱 분기 중 오류인 셋이다.
+
+            `CHECKIN_EXCEEDS_PARTY` — 누적 인원이 예약 인원을 넘는다.
+            `details.officialCheckedIn`으로 공식 인원을 함께 준다(CORE-AC-18).
+
+            `CHECKIN_SLOT_MISMATCH` — 다른 회차의 토큰이다.
+
+            `SNAPSHOT_STALE` — 마지막 동기화 후 2시간이 지난 스냅숏이다
+            (CORE-AC-16, ADM-AC-09). 재동기화 안내로 이어진다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: |
+            `FORBIDDEN_SCOPE`. 배정 장소 밖의 회차를 처리하려 한 경우다.
+
+            여기서는 403을 쓴다. `GET /holds/{holdId}`와 다른 판단인데,
+            행위자가 시스템 안에 있고 회차의 존재 자체는 비밀이 아니기
+            때문이다(CORE-AC-11). B2C 쪽 404와 대비된다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ═══════════════════════════════════════════════════════════
+  # 회차 수정 — Admin. 날짜·장소는 여기서 다루지 않는다.
+  # ═══════════════════════════════════════════════════════════
+  /slots/{slotId}:
+    patch:
+      tags: [slot]
+      summary: 회차 수정
+      operationId: updateSlot
+      security:
+        - adminAuth: []
+      description: |
+        회차의 정원과 판매 상태를 바꾼다.
+
+        **정원 축소 하한은 확정 예약 인원 + 활성 임시 확보 인원이다**
+        (06 §8.3, CORE-AC-13). 활성 확보를 빼면 결제 직전인 고객의 좌석이
+        사라진다. 그 고객은 10분 안에 결제할 권리를 이미 받았으므로,
+        확보를 무시하고 정원을 줄이면 06 §10의 "확정 인원 > 회차 정원 불가"가
+        결제 완료 시점에 깨진다.
+
+        판정은 축소 요청 시점의 값을 잠그고 한다. 세는 동안 새 확보가
+        생기면 06 §8.1과 같은 경쟁 조건이 된다.
+
+        > 2026-08-31까지 02 §6 ADM-PTN-03과 ADM-AC-05가 하한을 "확정 예약 수"로만
+        > 써서 06과 어긋나 있었다. 06 §8.3에 맞춰 02를 v2.2로, 05 §5.2를 정정했다.
+        > 세 문서가 이제 같은 하한을 말한다.
+
+        **날짜·장소 변경은 여기서 다루지 않는다.**
+        02 §6 ADM-PTN-03이 "이미 예약된 회차의 시간·장소 변경은 **영향받는
+        예약 수와 알림 필요성을 확인한다**"를 요구한다. 확인과 동의가 끼는
+        절차인데, 필드 하나를 바꾸는 `PATCH`와 같은 요청으로 묶으면 그 절차가
+        계약에 드러나지 않는다. 네 구현이 각자 확인 화면을 붙이거나 빠뜨린다.
+
+        별도 흐름으로 둔다 — `POST /slots/{slotId}/reschedule`.
+        영향 범위를 먼저 돌려주고, 사용자가 동의한 뒤 실행하는 2단계다.
+        (아직 작성하지 않았다.)
+
+        **낙관적 동시성**(06 §8.7). `version`을 필수로 받아 조용한 덮어쓰기를
+        막는다. 충돌하면 409 `VERSION_CONFLICT`에 최신 서버본을 함께 준다.
+      parameters:
+        - $ref: '#/components/parameters/SlotId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSlotRequest'
+      responses:
+        '200':
+          description: 수정 성공
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+        '409':
+          description: |
+            `CAPACITY_BELOW_COMMITTED` — 하한 미만으로 축소를 시도했다.
+            `details.confirmedSeats`·`details.heldSeats`를 함께 준다.
+
+            `VERSION_CONFLICT` — 다른 사용자가 먼저 고쳤다.
+            `details.current`에 최신 서버본을 담아 비교 화면을 그리게 한다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: '`VALIDATION_FAILED`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # ═══════════════════════════════════════════════════════════
+  # 날짜·장소 변경 — 2단계.
+  #
+  # 02 §6 ADM-PTN-03이 "이미 예약된 회차의 시간·장소 변경은 영향받는
+  # 예약 수와 알림 필요성을 확인한다"를 요구한다. 확인이 끼는 절차라
+  # PATCH 한 번으로 끝낼 수 없다.
+  #
+  # ① reschedule-preview  영향 범위를 계산하고 토큰을 발급한다
+  # ② reschedule          그 토큰으로 실행한다
+  #
+  # cancel-quote → cancellation 과 같은 꼴이다. 보여주고 동의받은 값이
+  # 실행 시점에도 같은지 서버가 대조한다.
+  # ═══════════════════════════════════════════════════════════
+  /slots/{slotId}/reschedule-preview:
+    post:
+      tags: [slot]
+      summary: 회차 일정·장소 변경 영향 범위
+      operationId: previewSlotReschedule
+      security:
+        - adminAuth: []
+      description: |
+        변경안을 넣으면 영향받는 예약 수와 막는 조건을 돌려주고, 실행에 쓸
+        `impactToken`을 발급한다. 회차는 아직 바뀌지 않는다.
+
+        **왜 조회인데 POST인가.**
+        `GET .../reschedule-impact?startAt=...&venueId=...`도 가능하고 그쪽이
+        REST로는 더 곧다. 그럼에도 POST를 고른 이유는 **이 요청이 토큰을
+        발급하기 때문**이다. 서버가 영향 범위 스냅숏과 토큰을 저장하므로
+        순수한 읽기가 아니다. 부작용이 있는 것을 GET에 두면 캐시·프리페치·
+        재시도가 조용히 토큰을 찍어낸다.
+
+        **왜 토큰을 쓰나.**
+        운영자가 이 화면을 보는 동안 예약이 더 들어올 수 있다. "예약 3건에
+        영향"을 보고 승인했는데 실행 시점에 11건이면 승인의 근거가 사라진다.
+        실행 요청이 토큰을 싣고 오면 서버가 그 사이 영향 범위가 변했는지
+        대조할 수 있다.
+
+        `POST /bookings/{bookingId}/cancellation`이 `expectedRefundAmount`를
+        받는 것과 같은 장치다. 보여준 값과 실행할 값이 같은지 서버가 판정한다.
+
+        **`blockers`가 비어 있지 않으면 실행할 수 없다.**
+        이미 시작한 회차, 취소된 회차, 그 시간대에 같은 장소를 쓰는 다른 회차가
+        여기 담긴다. 미리 알려 주면 운영자가 실행을 눌러 보고 실패하지 않는다.
+      parameters:
+        - $ref: '#/components/parameters/SlotId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleProposal'
+      responses:
+        '200':
+          description: |
+            영향 범위 계산 완료. **회차는 아직 바뀌지 않았다.**
+
+            `affectedBookingCount`가 0이면 알림 판단이 필요 없다. 그래도
+            `notificationRequired: false`를 명시적으로 담는다. 값이 없는 것과
+            "필요 없다"는 다르고, 네 구현이 그 차이를 추측하게 두지 않는다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RescheduleImpact'
+        '422':
+          description: |
+            `VALIDATION_FAILED`. 변경 항목이 하나도 없거나, 종료 시각이 시작
+            시각보다 앞서거나, 과거 시각으로 옮기려 한 경우다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /slots/{slotId}/reschedule:
+    post:
+      tags: [slot]
+      summary: 회차 일정·장소 변경 실행
+      operationId: rescheduleSlot
+      security:
+        - adminAuth: []
+      description: |
+        `reschedule-preview`가 준 토큰으로 실제 변경을 실행한다.
+
+        **`notifyCustomers`를 필수로 받는다. 기본값을 두지 않는다.**
+        02 §6 ADM-PTN-03이 "알림 필요성을 확인한다"를 요구한다. 기본값을 두면
+        확인이 아니라 통과가 된다. 운영자가 매번 고르게 하고, 고른 값은
+        06 §4의 `AuditLog`에 사유와 함께 남는다.
+
+        영향받는 예약이 있는데 `false`를 골라도 막지 않는다. 알리지 않기로 한
+        판단도 판단이고, PRD는 확인만 요구했다. 다만 기록은 남는다.
+
+        **재전송은 멱등 키로 막는다.** 같은 키·같은 본문이면 저장된 응답을
+        그대로 돌려준다(06 §8.2). 일정 변경이 두 번 일어나면 고객 알림도 두 번
+        나가므로 여기서 특히 중요하다.
+      parameters:
+        - $ref: '#/components/parameters/SlotId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleRequest'
+      responses:
+        '200':
+          description: |
+            변경 완료. 바뀐 회차를 돌려준다.
+
+            알림 발송은 즉시 끝나지 않는다. 02 §5 ADM-COM-04가 대량 작업을
+            백그라운드로 돌리라고 했으므로, 알림을 보내기로 했으면
+            `notificationJobId`를 함께 준다. 이 응답이 "알림이 도착했다"를
+            뜻하지는 않는다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RescheduleResult'
+        '409':
+          description: |
+            `RESCHEDULE_IMPACT_STALE` — 토큰 발급 뒤 영향 범위가 바뀌었다.
+            `details.currentImpact`에 새 계산을 담아 화면을 다시 그리게 한다.
+            운영자는 바뀐 숫자를 보고 다시 판단한다.
+
+            `VENUE_UNAVAILABLE` — 그 시간대에 같은 장소를 쓰는 다른 회차가 있다.
+            preview에서 `blockers`로 미리 알려 주지만, 그 사이 다른 회차가
+            생겼을 수 있어 실행 시점에 다시 본다.
+
+            `INVALID_STATE_TRANSITION` — 이미 시작했거나 취소된 회차다.
+
+            `VERSION_CONFLICT` — 다른 사용자가 먼저 이 회차를 고쳤다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: |
+            `VALIDATION_FAILED` — 토큰이 만료됐거나 형식이 잘못됐다.
+            `IDEMPOTENCY_KEY_REUSED` — 같은 키에 다른 본문이다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  # /slots/{slotId}/cancellation:
+  #   post:  회차 취소 — 02 §6 ADM-PTN-03의 "사유 입력 + 고객 전액 환불 업무 생성"
+  #          reschedule과 같은 2단계가 필요한지 먼저 판단한다
+
 
 components:
 
@@ -182,6 +927,32 @@ components:
       schema:
         type: string
         format: uuid
+
+    HoldId:
+      name: holdId
+      in: path
+      required: true
+      description: |
+        확보 식별자. 경로 파라미터는 항상 required다 — 값이 없으면 경로 자체가
+        성립하지 않기 때문이다. OpenAPI도 `in: path`에 `required: true`를 강제한다.
+      schema:
+        type: string
+
+    BookingId:
+      name: bookingId
+      in: path
+      required: true
+      description: 예약 식별자
+      schema:
+        type: string
+
+    SlotId:
+      name: slotId
+      in: path
+      required: true
+      description: 회차 식별자. 00 §7의 `Slot`이며 인증 세션과 무관하다
+      schema:
+        type: string
 
   headers:
     TraceId:
@@ -228,9 +999,9 @@ components:
     # ── Hold ────────────────────────────────────────────────
     CreateHoldRequest:
       type: object
-      required: [sessionId, partySize]
+      required: [slotId, partySize]
       properties:
-        sessionId:
+        slotId:
           type: string
           description: 회차 식별자
         partySize:
@@ -250,11 +1021,11 @@ components:
 
     Hold:
       type: object
-      required: [holdId, sessionId, partySize, expiresAt, quote, status]
+      required: [holdId, slotId, partySize, expiresAt, quote, status]
       properties:
         holdId:
           type: string
-        sessionId:
+        slotId:
           type: string
         partySize:
           type: integer
@@ -293,6 +1064,415 @@ components:
           description: |
             취소 정책 버전. 예약에 스냅숏으로 저장되며, 나중에 상품 정책이
             바뀌어도 이 예약의 환불 계산은 이 버전을 쓴다(00 §6.2, 06 §4.2).
+
+    # ── Booking ─────────────────────────────────────────────
+    CreateBookingRequest:
+      type: object
+      required: [holdId]
+      properties:
+        holdId:
+          type: string
+          description: |
+            소진할 확보. 회차·인원·금액은 확보에 이미 붙어 있으므로 다시 받지
+            않는다. 클라이언트가 금액을 실어 보내면 그 값을 신뢰할지 말지가
+            문제가 되는데, 신뢰하지 않을 것이면 받을 이유가 없다(06 §9.3).
+
+    Booking:
+      type: object
+      required:
+        [bookingId, bookingStatus, paymentStatus, refundStatus,
+         attendanceStatus, snapshot, createdAt]
+      description: |
+        **상태 네 개를 각각 별도 필드로 둔다**(CORE-AC-09, 06 §5.1).
+        서로 독립으로 움직이므로 합치면 표현할 수 없는 조합이 생긴다.
+      properties:
+        bookingId:
+          type: string
+        bookingStatus:
+          type: string
+          enum: [PAYMENT_PENDING, CONFIRMED, COMPLETED, PAYMENT_FAILED,
+                 CANCEL_PENDING, CANCELLED, NO_SHOW]
+          description: 00 §7.3 그대로
+        paymentStatus:
+          type: string
+          enum: [PENDING, SUCCEEDED, FAILED]
+        paymentFailureReason:
+          type: string
+          enum: [DECLINED, AUTH_FAILED, TIMEOUT, USER_CANCELED]
+          description: |
+            `paymentStatus: FAILED`일 때만 채워진다. B2C-RSV-03의 네 가지 모의
+            결제 시나리오와 1:1이다. B2C-RSV-04가 "실패 사유 범주"를 요구한다.
+
+            `TIMEOUT`은 **실패로 확정된** 시간 초과다. 결과를 모르는 상태는
+            실패가 아니라 `bookingStatus: PAYMENT_PENDING`으로 표현한다.
+        refundStatus:
+          type: string
+          enum: [NONE, REQUESTED, APPROVAL_PENDING, PROCESSING,
+                 SUCCEEDED, PARTIALLY_SUCCEEDED, FAILED]
+          description: |
+            00 §7.4에 `NONE`을 더했다. 환불이 없을 때 필드를 빼거나 null로
+            두는 대신 값을 준다. 필드 유무로 상태를 암시하면 네 구현이 각자
+            null 분기를 지고, 그 분기를 빠뜨린 구현에서 화면이 깨진다.
+        attendanceStatus:
+          type: string
+          enum: [NOT_CHECKED_IN, PARTIAL, COMPLETE, NO_SHOW, CORRECTED]
+          description: 00 §7.5 그대로
+        snapshot:
+          $ref: '#/components/schemas/BookingSnapshot'
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingSnapshot:
+      type: object
+      required:
+        [experienceId, experienceName, venueName, slotStartAt,
+         partySize, quote, cancellationPolicy]
+      description: |
+        **예약 시점에 얼어붙은 값이다**(00 §6.2, 06 §4.2, CORE-AC-25).
+        상품명·가격·정책이 나중에 바뀌어도 이 예약의 표시와 환불 계산은
+        여기 담긴 값을 쓴다.
+
+        현재 상품 정보가 필요하면 `experienceId`로 따로 조회한다.
+        한 응답에 두 시점을 섞지 않는다.
+      properties:
+        experienceId:
+          type: string
+        experienceName:
+          type: string
+        venueName:
+          type: string
+        slotStartAt:
+          type: string
+          format: date-time
+        partySize:
+          type: integer
+        quote:
+          $ref: '#/components/schemas/Quote'
+        cancellationPolicy:
+          type: string
+          enum: [FLEXIBLE, STANDARD]
+          description: 00 §6.4의 정책 템플릿
+
+    # ── 취소·환불 ───────────────────────────────────────────
+    CancelQuote:
+      type: object
+      required:
+        [refundableAmount, deductionAmount, refundRate, appliedPolicy,
+         policyVersion, calculatedAt]
+      properties:
+        refundableAmount:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: 환불 예상액
+        deductionAmount:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: 차감액. B2C-CAN-01이 화면에 표시하라고 요구한다
+        refundRate:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: 적용 환불률(%). 00 §6.4 표의 값
+        appliedPolicy:
+          type: string
+          enum: [FLEXIBLE, STANDARD]
+        policyVersion:
+          type: string
+          description: 예약에 저장된 정책 스냅숏 버전. 현재 상품 정책이 아니다
+        calculatedAt:
+          type: string
+          format: date-time
+          description: |
+            **서버 기준 계산 시각**(06 §6.2). 이 값이 없으면 화면의 금액이
+            언제 것인지 알 수 없다. 환불액을 바꾸는 것은 가격이 아니라
+            경과 시간이기 때문이다.
+        boundaryAt:
+          type: string
+          format: date-time
+          description: |
+            이 금액이 유지되는 마지막 시각. 다음 정책 구간 경계다.
+            체험이 이미 시작됐거나 더 낮아질 구간이 없으면 생략한다.
+
+            고객이 취소 화면을 열어둔 채 시간을 보내면 구간이 넘어간다.
+            이 값을 주면 클라이언트가 남은 시간을 보여주고 만료 시 다시
+            조회할 수 있다.
+
+    CancelBookingRequest:
+      type: object
+      required: [expectedRefundAmount]
+      properties:
+        expectedRefundAmount:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: |
+            `cancel-quote`에서 받아 **고객에게 보여준** 금액을 그대로 싣는다.
+            서버가 다시 계산해 다르면 409 `REFUND_QUOTE_STALE`로 막는다.
+
+            필수인 이유는 B2C-CAN-01이 "사용자가 명시적으로 동의한 뒤 취소
+            요청을 생성한다"를 요구하기 때문이다. 동의한 금액이 무엇이었는지
+            서버가 모르면 동의가 유효한지 판정할 수 없다.
+        reason:
+          type: string
+          description: 선택. 고객이 남긴 취소 사유
+
+    Cancellation:
+      type: object
+      required: [bookingId, bookingStatus, refundStatus, refundAmount, cancelledAt]
+      description: |
+        **취소와 환불을 별도 필드로 담는다.** 취소는 즉시 확정되지만 환불은
+        외부 처리라 응답 시점에 끝나 있지 않다. 06 §5.1이 "예약이 CANCELLED인데
+        환불이 FAILED일 수 있다"고 못박았다.
+      properties:
+        bookingId:
+          type: string
+        bookingStatus:
+          type: string
+          enum: [CANCEL_PENDING, CANCELLED]
+        refundStatus:
+          type: string
+          enum: [REQUESTED, APPROVAL_PENDING, PROCESSING,
+                 SUCCEEDED, PARTIALLY_SUCCEEDED, FAILED]
+          description: |
+            정상적인 최초 응답은 `REQUESTED`다. 이 자리에 `SUCCEEDED`가 바로
+            오는 것을 전제로 화면을 짜면 안 된다.
+        refundAmount:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: 확정된 환불액. 요청의 `expectedRefundAmount`와 일치한다
+        cancelledAt:
+          type: string
+          format: date-time
+
+    # ── 체크인 ──────────────────────────────────────────────
+    CheckInRequest:
+      type: object
+      required: [clientEventId, bookingId, slotId, headcount, clientRecordedAt]
+      properties:
+        clientEventId:
+          type: string
+          format: uuid
+          description: |
+            **이 요청의 멱등 키다.** `Idempotency-Key` 헤더를 쓰지 않는다.
+
+            헤더 키는 요청을 보내려는 순간 만들어져 그 요청에 붙는다.
+            `clientEventId`는 현장에서 체크인이 벌어진 순간 만들어져
+            **사건에 붙는다.** 오프라인 이벤트는 기기에 저장됐다가 나중에
+            전송되므로(02 §7 ADM-DSK-03), 그 사이 앱이 재시작되면 헤더 키는
+            새로 생기지만 이 값은 그대로다.
+
+            CORE-AC-15의 "반복 전송해도 출석이 중복되지 않는다"는 사건 단위
+            키로만 성립한다.
+        bookingId:
+          type: string
+        slotId:
+          type: string
+          description: 회차. 토큰이 가리키는 회차와 다르면 409다
+        headcount:
+          type: integer
+          minimum: 1
+          description: 이번에 체크인하는 인원. 누적이 아니라 증분이다
+        clientRecordedAt:
+          type: string
+          format: date-time
+          description: |
+            기기가 기록한 발생 시각. **서버는 저장하되 판정에 쓰지 않는다.**
+
+            기기 시계는 틀릴 수 있고 조작될 수도 있다. 00 §7.2가 hold 만료에서
+            클라이언트 시각을 거부한 것과 같은 이유다. 다만 오프라인 이벤트는
+            서버가 그 순간을 보지 못했으므로 감사 기록으로는 남긴다.
+
+            판정에 쓰는 시각은 서버 수신 시각과 `snapshotSyncedAt`이다.
+        snapshotSyncedAt:
+          type: string
+          format: date-time
+          description: |
+            이 이벤트가 근거한 스냅숏의 마지막 동기화 시각(06 §11.1).
+            서버가 2시간 규칙을 이 값으로 판정한다(CORE-AC-16).
+            온라인 즉시 처리면 생략한다.
+
+    CheckInResult:
+      type: object
+      required: [outcome, bookingId, officialCheckedIn, attendanceStatus]
+      properties:
+        outcome:
+          type: string
+          enum: [APPLIED, REPLAYED, RECONCILED, QUEUED_CONFLICT, QUEUED_QUARANTINE]
+          description: |
+            06 §11.2의 일곱 분기 중 오류가 아닌 넷을 구분한다.
+
+            `APPLIED` 새 체크인 반영(201) ·
+            `REPLAYED` 같은 이벤트 재전송(200) ·
+            `RECONCILED` 다른 기기가 먼저 처리해 공식 인원으로 교정(200) ·
+            `QUEUED_CONFLICT` 취소된 예약의 늦은 이벤트(202) ·
+            `QUEUED_QUARANTINE` 권한 회수된 행위자(202)
+        bookingId:
+          type: string
+        officialCheckedIn:
+          type: integer
+          description: |
+            **서버가 판정한 현재 누적 인원.** 기기가 계산한 값이 아니다.
+            `RECONCILED`일 때 기기 화면의 숫자를 이 값으로 덮어쓴다.
+        attendanceStatus:
+          type: string
+          enum: [NOT_CHECKED_IN, PARTIAL, COMPLETE, NO_SHOW, CORRECTED]
+        queueReason:
+          type: string
+          description: |
+            `QUEUED_*`일 때만 채워진다. 현장 담당자에게 왜 보류됐는지
+            보여주기 위한 값이다.
+
+    # ── 회차 ────────────────────────────────────────────────
+    UpdateSlotRequest:
+      type: object
+      required: [version]
+      description: |
+        날짜·장소는 여기에 없다. 02 §6 ADM-PTN-03이 그 변경에 "영향받는 예약
+        수와 알림 필요성 확인"을 요구하므로 별도 2단계 흐름으로 분리했다.
+      properties:
+        version:
+          type: integer
+          description: |
+            낙관적 동시성(06 §8.7). 조회 시 받은 값을 그대로 싣는다.
+            다르면 409 `VERSION_CONFLICT`다. 조용한 덮어쓰기를 막는다.
+        capacity:
+          type: integer
+          minimum: 1
+          description: |
+            축소 하한은 **확정 예약 인원 + 활성 임시 확보 인원**이다
+            (06 §8.3). 여기 minimum을 1로 둔 것은 형식 검증일 뿐이고,
+            실제 하한은 서버가 그 시점 값으로 판정한다(06 §9.3).
+        salesStatus:
+          type: string
+          enum: [ON_SALE, PAUSED, CLOSED]
+
+    Slot:
+      type: object
+      required: [slotId, experienceId, startAt, endAt, capacity,
+                 confirmedSeats, heldSeats, salesStatus, version]
+      properties:
+        slotId:
+          type: string
+        experienceId:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+        confirmedSeats:
+          type: integer
+          description: 확정 예약 인원
+        heldSeats:
+          type: integer
+          description: |
+            활성 임시 확보 인원. 정원 축소 하한에 포함된다(06 §8.3).
+            클라이언트가 잔여 좌석을 직접 계산하지 않도록 서버가 나눠 준다.
+        remainingSeats:
+          type: integer
+          description: |
+            `capacity - confirmedSeats - heldSeats`. 서버가 계산해 준다.
+            프론트가 빼기를 하면 네 구현이 각자 다른 시점의 값으로 계산한다
+            (06 §9.3).
+        salesStatus:
+          type: string
+          enum: [ON_SALE, PAUSED, CLOSED]
+        version:
+          type: integer
+
+    # ── 일정·장소 변경 ──────────────────────────────────────
+    RescheduleProposal:
+      type: object
+      description: |
+        바꾸려는 값만 담는다. 셋 중 **하나 이상**이 있어야 한다.
+        정원과 판매 상태는 여기 없다. 그건 `PATCH /slots/{slotId}`가 다룬다.
+      properties:
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        venueId:
+          type: string
+
+    RescheduleImpact:
+      type: object
+      required:
+        [proposal, affectedBookingCount, affectedPartySize,
+         notificationRequired, blockers, impactToken, tokenExpiresAt]
+      properties:
+        proposal:
+          $ref: '#/components/schemas/RescheduleProposal'
+        affectedBookingCount:
+          type: integer
+          description: |
+            변경의 영향을 받는 확정 예약 수. 02 §6 ADM-PTN-03이 화면에
+            보여주라고 요구하는 값이다.
+        affectedPartySize:
+          type: integer
+          description: 그 예약들의 인원 합계. 몇 명에게 알림이 가는지다
+        notificationRequired:
+          type: boolean
+          description: |
+            영향받는 예약이 있으면 `true`. 값이 없는 것과 "필요 없다"는 다르므로
+            0건일 때도 `false`를 명시해 담는다.
+        blockers:
+          type: array
+          description: |
+            비어 있지 않으면 실행할 수 없다. 미리 알려 주어 운영자가 실행을
+            눌러 보고 실패하지 않게 한다.
+          items:
+            type: string
+            enum: [SLOT_ALREADY_STARTED, SLOT_CANCELLED, VENUE_UNAVAILABLE]
+        impactToken:
+          type: string
+          description: |
+            이 계산 결과를 가리키는 토큰. 실행 요청에 그대로 싣는다.
+            서버가 실행 시점에 영향 범위를 다시 계산해 이 토큰이 가리키는
+            값과 대조한다. 다르면 409 `RESCHEDULE_IMPACT_STALE`이다.
+        tokenExpiresAt:
+          type: string
+          format: date-time
+          description: |
+            토큰 유효 시각. 만료 후 실행하면 422다. 화면을 오래 열어 둔 채
+            승인하는 것을 막는다.
+
+    RescheduleRequest:
+      type: object
+      required: [impactToken, notifyCustomers, reason]
+      properties:
+        impactToken:
+          type: string
+          description: '`reschedule-preview`가 준 값을 그대로 싣는다'
+        notifyCustomers:
+          type: boolean
+          description: |
+            영향받는 고객에게 알릴 것인가. **기본값을 두지 않는다.**
+            02 §6이 "알림 필요성을 확인한다"를 요구하는데, 기본값이 있으면
+            확인이 아니라 통과가 된다. 고른 값은 감사 로그에 남는다.
+        reason:
+          type: string
+          description: |
+            변경 사유. 필수다. 고객 일정을 바꾸는 조작이므로 근거 없이
+            실행되지 않게 한다(02 §10 고위험 조작 규칙).
+
+    RescheduleResult:
+      type: object
+      required: [slot, affectedBookingCount, notifyCustomers]
+      properties:
+        slot:
+          $ref: '#/components/schemas/Slot'
+        affectedBookingCount:
+          type: integer
+          description: 실제로 영향받은 예약 수. preview 값과 같아야 한다
+        notifyCustomers:
+          type: boolean
+        notificationJobId:
+          type: string
+          description: |
+            `notifyCustomers: true`일 때만 채워진다. 알림은 백그라운드 작업이라
+            (02 §5 ADM-COM-04) 이 응답이 "알림이 도착했다"를 뜻하지 않는다.
+            진행 상태는 작업 조회로 확인한다.
 
   responses:
     Unauthorized:
