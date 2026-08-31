@@ -1,0 +1,11 @@
+# Redocly 린트 설정.
+# 기본 규칙에서 두 가지만 끈다. 끈 이유를 여기 남긴다.
+extends:
+  - recommended
+
+rules:
+  # 학습용 비공개 명세라 라이선스 항목을 두지 않는다.
+  info-license: off
+  # servers가 http://localhost:8080이다. ADR-0005의 로컬 포트 규약이며
+  # 공개 서버가 아직 없다. 배포 환경이 생기면 이 규칙을 다시 켠다.
+  no-server-example.com: off

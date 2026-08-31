@@ -10,13 +10,14 @@ DayLink 프로젝트의 **기술 판단**을 기록하는 곳이다. 제품 요�
 | [0002](0002-core-api-stack-spring-boot.md) | Core API 스택을 Spring Boot(JVM)로 한다 | 유효 | 2026-08-23 |
 | [0003](0003-core-api-language-java-21.md) | Core API 언어를 Java 21로 한다 | 유효 | 2026-08-24 |
 | [0004](0004-persistence-explicit-sql-first.md) | 영속성은 명시적 SQL 우선, JPA는 M3 후반 낙관적 락에 한정한다 | 유효 | 2026-08-24 |
-| [0005](0005-repository-structure.md) | 저장소를 조직 아래 6개로 분리하고 공유 자산을 패키지로 배포한다 | 유효 (명명은 → 0011) | 2026-08-24 |
+| [0005](0005-repository-structure.md) | 저장소를 조직 아래 6개로 분리하고 공유 자산을 패키지로 배포한다 | 유효 (명명은 → 0011·0015) | 2026-08-24 |
 | [0006](0006-persistence-tool-mybatis.md) | 명시적 SQL 도구로 MyBatis를 쓴다 | 유효 | 2026-08-24 |
 | [0009](0009-build-and-test-toolchain.md) | 빌드·테스트 도구를 고정하고 버전을 잠금 파일로 관리한다 | 유효 | 2026-08-24 |
 | [0011](0011-shared-spec-folder-naming.md) | 공유 규격의 폴더·패키지 이름을 `api-spec`으로 한다 | 유효 | 2026-08-26 |
 | [0012](0012-documents-live-in-notion.md) | 제품 문서의 원본을 Notion에 두고 저장소에는 사본을 두지 않는다 | 대체됨 (→ 0013) | 2026-08-27 |
 | [0013](0013-documents-live-in-repo.md) | 문서의 원본은 저장소에 두고 Notion은 읽기용 사본으로 삼는다 | 유효 | 2026-08-28 |
 | [0014](0014-slot-naming.md) | 회차의 영어 식별자를 `Slot`으로 한다 | 유효 | 2026-08-31 |
+| [0015](0015-package-naming-and-registry.md) | 패키지를 GitHub Packages에 `@devc-showcase` 스코프로 배포한다 | 유효 | 2026-08-31 |
 
 ## 쓰는 법
 

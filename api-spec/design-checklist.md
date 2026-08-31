@@ -361,7 +361,7 @@ npx @redocly/cli@latest lint api-spec/openapi.yaml
     때문이다. 02는 화면 요구를 적는 문서라 서버 규칙을 요약해 옮기다 한쪽을 빠뜨렸다.
 
 - [x] 날짜·장소 변경은 이 엔드포인트로 처리하나, 별도 흐름인가? (02 §6)
-  → **별도 흐름으로 뺐다.** `POST /slots/{slotId}/reschedule`(아직 미작성).
+  → **별도 흐름으로 뺐다.** `POST /slots/{slotId}/reschedule-preview` → `.../reschedule` 2단계로 작성했다.
   → 02 §6 ADM-PTN-03이 "이미 예약된 회차의 시간·장소 변경은 **영향받는 예약 수와 알림
     필요성을 확인한다**"를 요구한다. 확인과 동의가 끼는 절차인데, 필드 하나를 바꾸는
     `PATCH`와 같은 요청으로 묶으면 그 절차가 계약에 드러나지 않는다. 네 구현이 각자

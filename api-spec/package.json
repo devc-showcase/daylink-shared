@@ -1,0 +1,36 @@
+{
+  "name": "@devc-showcase/api-spec",
+  "version": "0.1.0",
+  "description": "DayLink Core API 명세와 여기서 생성한 TypeScript 타입",
+  "license": "UNLICENSED",
+  "type": "module",
+  "types": "./dist/openapi.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/openapi.d.ts"
+    },
+    "./openapi.yaml": "./openapi.yaml"
+  },
+  "files": [
+    "dist",
+    "openapi.yaml",
+    "errors.md"
+  ],
+  "scripts": {
+    "lint": "redocly lint openapi.yaml",
+    "generate": "openapi-typescript openapi.yaml --output dist/openapi.d.ts",
+    "prepack": "npm run generate"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.49.0",
+    "openapi-typescript": "7.13.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devc-showcase/daylink-shared.git",
+    "directory": "api-spec"
+  }
+}
