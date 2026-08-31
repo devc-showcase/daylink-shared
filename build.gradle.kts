@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "com.daylink"
-version = providers.gradleProperty("apiSpecVersion").get()
+version = providers.gradleProperty("sharedVersion").get()
 
 // 명세 파일만 담은 jar. 소비자는 jar 안의 openapi.yaml을 읽어 생성기를 돌린다.
 val specJar by tasks.registering(Jar::class) {

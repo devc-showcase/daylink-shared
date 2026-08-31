@@ -54,18 +54,33 @@ jobs:
             exit 1
           fi
 
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      # 시드는 손으로 고치는 파일이라 참조가 쉽게 깨진다. 초안에서 실제로
+      # confirmedSeats와 예약 합계가 4곳 어긋난 적이 있다 — 눈으로는 안 보였다.
+      - name: 시드 무결성 검사
+        working-directory: fixtures
+        run: npm run lint
+
   version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # 두 곳에 적힌 버전이 갈라지면 npm과 Maven이 다른 버전을 배포한다.
+      # 세 곳에 적힌 버전이 갈라지면 패키지마다 다른 버전이 나간다.
       # 배포 시점이 아니라 여기서 잡는다.
-      - name: package.json과 gradle.properties의 버전 일치
+      - name: 저장소 버전이 세 곳에서 같은지 확인
         run: |
-          NPM=$(node -p "require('./api-spec/package.json').version")
-          GRADLE=$(grep '^apiSpecVersion=' gradle.properties | cut -d= -f2)
-          echo "npm=$NPM gradle=$GRADLE"
-          if [ "$NPM" != "$GRADLE" ]; then
-            echo "::error::버전 불일치 — package.json=$NPM, gradle.properties=$GRADLE"
+          SPEC=$(node -p "require('./api-spec/package.json').version")
+          FIX=$(node -p "require('./fixtures/package.json').version")
+          GRADLE=$(grep '^sharedVersion=' gradle.properties | cut -d= -f2)
+          echo "api-spec=$SPEC fixtures=$FIX gradle=$GRADLE"
+          if [ "$SPEC" != "$GRADLE" ] || [ "$FIX" != "$GRADLE" ]; then
+            echo "::error::버전 불일치 — api-spec=$SPEC, fixtures=$FIX, gradle.properties=$GRADLE"
             exit 1
           fi

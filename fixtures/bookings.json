@@ -1,0 +1,235 @@
+{
+  "$comment": "예약·결제·환불·출석. 금액은 00 §6.3 공식으로 계산했다 — G=단가×인원, C=G-D, F=floor(G×0.12).",
+  "bookings": [
+    {
+      "id": "bkg-fill-lastseat",
+      "customerId": "cus-004",
+      "slotId": "slt-lastseat",
+      "experienceId": "exp-001",
+      "partySize": 5,
+      "bookingStatus": "CONFIRMED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 225000,
+        "discountAmount": 0,
+        "payableAmount": 225000,
+        "platformFee": 27000,
+        "partnerSettlementBase": 198000
+      },
+      "expect": "slt-lastseat의 좌석 5석을 실제로 채운다. 잔여 1석이 되어 CORE-AC-01을 재현할 수 있다"
+    },
+    {
+      "id": "bkg-confirmed",
+      "customerId": "cus-001",
+      "slotId": "slt-std-73h",
+      "experienceId": "exp-001",
+      "partySize": 2,
+      "bookingStatus": "CONFIRMED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 90000,
+        "discountAmount": 0,
+        "payableAmount": 90000,
+        "platformFee": 10800,
+        "partnerSettlementBase": 79200
+      },
+      "expect": "정상 확정. STANDARD 73시간 전이라 지금 취소하면 100% 환불"
+    },
+    {
+      "id": "bkg-half",
+      "customerId": "cus-003",
+      "slotId": "slt-std-71h",
+      "experienceId": "exp-001",
+      "partySize": 1,
+      "bookingStatus": "CONFIRMED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 45000,
+        "discountAmount": 0,
+        "payableAmount": 45000,
+        "platformFee": 5400,
+        "partnerSettlementBase": 39600
+      },
+      "expect": "STANDARD 71시간 전 — 취소 시 50% 환불(00 §6.4)"
+    },
+    {
+      "id": "bkg-nonrefund",
+      "customerId": "cus-003",
+      "slotId": "slt-std-23h",
+      "experienceId": "exp-001",
+      "partySize": 1,
+      "bookingStatus": "CONFIRMED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 45000,
+        "discountAmount": 0,
+        "payableAmount": 45000,
+        "platformFee": 5400,
+        "partnerSettlementBase": 39600
+      },
+      "expect": "STANDARD 24시간 미만 — 취소해도 0% 환불"
+    },
+    {
+      "id": "bkg-flex-half",
+      "customerId": "cus-001",
+      "slotId": "slt-flx-23h",
+      "experienceId": "exp-002",
+      "partySize": 2,
+      "bookingStatus": "CONFIRMED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 60000,
+        "policyVersion": "v1",
+        "grossAmount": 120000,
+        "discountAmount": 10000,
+        "payableAmount": 110000,
+        "platformFee": 14400,
+        "partnerSettlementBase": 105600
+      },
+      "expect": "쿠폰 적용 + FLEXIBLE 50% 구간. 환불 기준은 실제 결제액 C이지 G가 아니다",
+      "couponCode": "CPN-WELCOME"
+    },
+    {
+      "id": "bkg-failed",
+      "customerId": "cus-002",
+      "slotId": "slt-lastseat",
+      "experienceId": "exp-001",
+      "partySize": 1,
+      "bookingStatus": "PAYMENT_FAILED",
+      "paymentStatus": "FAILED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 45000,
+        "discountAmount": 0,
+        "payableAmount": 45000,
+        "platformFee": 5400,
+        "partnerSettlementBase": 39600
+      },
+      "expect": "결제 실패 — 좌석을 점유하지 않는다. slt-lastseat의 잔여 1석은 그대로",
+      "paymentFailureReason": "DECLINED"
+    },
+    {
+      "id": "bkg-refund-partial",
+      "customerId": "cus-003",
+      "slotId": "slt-past",
+      "experienceId": "exp-001",
+      "partySize": 2,
+      "bookingStatus": "CANCELLED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "PARTIALLY_SUCCEEDED",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 90000,
+        "discountAmount": 0,
+        "payableAmount": 90000,
+        "platformFee": 10800,
+        "partnerSettlementBase": 79200
+      },
+      "expect": "취소됐지만 환불은 일부만 성공. 00 §7.4 — 예약 취소와 환불 성공은 같은 상태가 아니다"
+    },
+    {
+      "id": "bkg-completed",
+      "customerId": "cus-004",
+      "slotId": "slt-past",
+      "experienceId": "exp-001",
+      "partySize": 1,
+      "bookingStatus": "COMPLETED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "COMPLETE",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 45000,
+        "discountAmount": 0,
+        "payableAmount": 45000,
+        "platformFee": 5400,
+        "partnerSettlementBase": 39600
+      },
+      "expect": "이용 완료 — 후기 작성 가능(B2C-REV-001), 정산 대상"
+    },
+    {
+      "id": "bkg-today",
+      "customerId": "cus-001",
+      "slotId": "slt-today",
+      "experienceId": "exp-001",
+      "partySize": 3,
+      "bookingStatus": "CONFIRMED",
+      "paymentStatus": "SUCCEEDED",
+      "refundStatus": "NONE",
+      "attendanceStatus": "NOT_CHECKED_IN",
+      "snapshot": {
+        "unitPrice": 45000,
+        "policyVersion": "v1",
+        "grossAmount": 135000,
+        "discountAmount": 0,
+        "payableAmount": 135000,
+        "platformFee": 16200,
+        "partnerSettlementBase": 118800
+      },
+      "expect": "오늘 회차 — 현장 체크인·부분 출석(PARTIAL) 시험용"
+    }
+  ],
+  "checkInEvents": [
+    {
+      "id": "chk-001",
+      "bookingId": "bkg-completed",
+      "clientEventId": "11111111-1111-4111-8111-111111111111",
+      "headcount": 1,
+      "mode": "QR",
+      "recordedOffsetMinutes": -2820,
+      "expect": "정상 체크인 → attendanceStatus COMPLETE"
+    },
+    {
+      "id": "chk-002",
+      "bookingId": "bkg-today",
+      "clientEventId": "22222222-2222-4222-8222-222222222222",
+      "headcount": 1,
+      "mode": "MANUAL",
+      "recordedOffsetMinutes": 0,
+      "snapshotSyncedOffsetMinutes": -30,
+      "expect": "오프라인 큐 — 스냅숏이 30분 전이라 2시간 규칙 통과(06 §11.1, CORE-AC-16)"
+    },
+    {
+      "id": "chk-003",
+      "bookingId": "bkg-today",
+      "clientEventId": "33333333-3333-4333-8333-333333333333",
+      "headcount": 1,
+      "mode": "MANUAL",
+      "recordedOffsetMinutes": 0,
+      "snapshotSyncedOffsetMinutes": -150,
+      "expect": "스냅숏이 2시간 30분 전 — 2시간을 넘겨 정상 승인하지 않는다(CORE-AC-16)"
+    }
+  ],
+  "coupons": [
+    {
+      "code": "CPN-WELCOME",
+      "discountAmount": 10000,
+      "status": "ACTIVE",
+      "expect": "플랫폼 쿠폰. 00 §6.3 — 쿠폰 비용은 파트너 정산액에서 차감하지 않는다"
+    }
+  ]
+}

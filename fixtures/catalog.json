@@ -1,0 +1,164 @@
+{
+  "$comment": "파트너·장소·상품·회차. 회차 시각은 앵커 기준 상대 오프셋이다 — README의 '시각 규약' 참조.",
+  "partners": [
+    {
+      "id": "ptn-001",
+      "name": "한나절공방",
+      "status": "APPROVED"
+    },
+    {
+      "id": "ptn-002",
+      "name": "바다한스푼",
+      "status": "PENDING_REVIEW",
+      "note": "심사 대기 — OPS_REVIEWER 흐름용"
+    }
+  ],
+  "venues": [
+    {
+      "id": "ven-001",
+      "partnerId": "ptn-001",
+      "name": "성수 공방",
+      "region": "seoul-seongsu"
+    },
+    {
+      "id": "ven-002",
+      "partnerId": "ptn-001",
+      "name": "연남 스튜디오",
+      "region": "seoul-yeonnam"
+    }
+  ],
+  "experiences": [
+    {
+      "id": "exp-001",
+      "partnerId": "ptn-001",
+      "venueId": "ven-001",
+      "title": "도자기 원데이 클래스",
+      "categorySlug": "craft",
+      "unitPrice": 45000,
+      "cancellationPolicy": "STANDARD",
+      "status": "PUBLISHED"
+    },
+    {
+      "id": "exp-002",
+      "partnerId": "ptn-001",
+      "venueId": "ven-002",
+      "title": "향수 블렌딩",
+      "categorySlug": "craft",
+      "unitPrice": 60000,
+      "cancellationPolicy": "FLEXIBLE",
+      "status": "PUBLISHED"
+    },
+    {
+      "id": "exp-003",
+      "partnerId": "ptn-002",
+      "venueId": null,
+      "title": "새벽 해변 요가",
+      "categorySlug": "wellness",
+      "unitPrice": 30000,
+      "cancellationPolicy": "FLEXIBLE",
+      "status": "IN_REVIEW",
+      "note": "미게시 — SLOT_NOT_BOOKABLE 재현용"
+    }
+  ],
+  "slots": [
+    {
+      "id": "slt-lastseat",
+      "experienceId": "exp-001",
+      "startOffsetMinutes": 10080,
+      "durationMinutes": 120,
+      "capacity": 6,
+      "confirmedSeats": 5,
+      "heldSeats": 0,
+      "salesStatus": "ON_SALE",
+      "expect": "잔여 1석. CORE-AC-01 마지막 좌석 동시 요청 50건 중 정확히 1건만 성공"
+    },
+    {
+      "id": "slt-std-73h",
+      "experienceId": "exp-001",
+      "startOffsetMinutes": 4380,
+      "durationMinutes": 120,
+      "capacity": 6,
+      "confirmedSeats": 2,
+      "heldSeats": 0,
+      "salesStatus": "ON_SALE",
+      "expect": "STANDARD 72시간 경계 바깥(73시간 전) — 환불률 100%"
+    },
+    {
+      "id": "slt-std-71h",
+      "experienceId": "exp-001",
+      "startOffsetMinutes": 4260,
+      "durationMinutes": 120,
+      "capacity": 6,
+      "confirmedSeats": 1,
+      "heldSeats": 0,
+      "salesStatus": "ON_SALE",
+      "expect": "STANDARD 72시간 경계 안쪽(71시간 전) — 환불률 50%"
+    },
+    {
+      "id": "slt-std-23h",
+      "experienceId": "exp-001",
+      "startOffsetMinutes": 1380,
+      "durationMinutes": 120,
+      "capacity": 6,
+      "confirmedSeats": 1,
+      "heldSeats": 0,
+      "salesStatus": "ON_SALE",
+      "expect": "STANDARD 24시간 미만(23시간 전) — 환불률 0%"
+    },
+    {
+      "id": "slt-flx-25h",
+      "experienceId": "exp-002",
+      "startOffsetMinutes": 1500,
+      "durationMinutes": 90,
+      "capacity": 4,
+      "confirmedSeats": 0,
+      "heldSeats": 0,
+      "salesStatus": "ON_SALE",
+      "expect": "FLEXIBLE 24시간 경계 바깥(25시간 전) — 환불률 100%"
+    },
+    {
+      "id": "slt-flx-23h",
+      "experienceId": "exp-002",
+      "startOffsetMinutes": 1380,
+      "durationMinutes": 90,
+      "capacity": 4,
+      "confirmedSeats": 2,
+      "heldSeats": 0,
+      "salesStatus": "ON_SALE",
+      "expect": "FLEXIBLE 24시간 경계 안쪽(23시간 전) — 환불률 50%"
+    },
+    {
+      "id": "slt-today",
+      "experienceId": "exp-001",
+      "startOffsetMinutes": 180,
+      "durationMinutes": 120,
+      "capacity": 6,
+      "confirmedSeats": 3,
+      "heldSeats": 0,
+      "salesStatus": "ON_SALE",
+      "expect": "오늘 회차 — 현장 데스크 체크인 흐름(ADM-DSK-001)"
+    },
+    {
+      "id": "slt-past",
+      "experienceId": "exp-001",
+      "startOffsetMinutes": -2880,
+      "durationMinutes": 120,
+      "capacity": 6,
+      "confirmedSeats": 1,
+      "heldSeats": 0,
+      "salesStatus": "CLOSED",
+      "expect": "지난 회차 — 이용 완료·후기 작성·정산 대상"
+    },
+    {
+      "id": "slt-suspended",
+      "experienceId": "exp-003",
+      "startOffsetMinutes": 5760,
+      "durationMinutes": 60,
+      "capacity": 10,
+      "confirmedSeats": 0,
+      "heldSeats": 0,
+      "salesStatus": "SUSPENDED",
+      "expect": "판매 중단 — SLOT_NOT_BOOKABLE 409"
+    }
+  ]
+}

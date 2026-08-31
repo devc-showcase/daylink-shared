@@ -1,0 +1,29 @@
+{
+  "name": "@devc-showcase/fixtures",
+  "version": "0.1.0",
+  "description": "DayLink 시드 데이터와 테스트 계정. 다섯 저장소가 같은 값을 본다.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    "./accounts": "./accounts.json",
+    "./catalog": "./catalog.json",
+    "./bookings": "./bookings.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "accounts.json",
+    "catalog.json",
+    "bookings.json"
+  ],
+  "scripts": {
+    "lint": "node validate.mjs"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devc-showcase/daylink-shared.git",
+    "directory": "fixtures"
+  }
+}

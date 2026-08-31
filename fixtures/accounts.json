@@ -1,0 +1,35 @@
+{
+  "$comment": "역할별 테스트 계정. 02 §3.1의 여덟 역할을 모두 덮는다.",
+  "customers": [
+    { "id": "cus-001", "email": "customer1@example.test", "name": "김고객", "note": "일반 예약 흐름" },
+    { "id": "cus-002", "email": "customer2@example.test", "name": "이고객", "note": "마지막 1좌석 경쟁 상대(CORE-AC-01)" },
+    { "id": "cus-003", "email": "customer3@example.test", "name": "박고객", "note": "취소·환불 흐름" },
+    { "id": "cus-004", "email": "customer4@example.test", "name": "최고객", "note": "이용 완료 — 후기 작성 가능(B2C-REV-001)" }
+  ],
+  "staff": [
+    { "id": "stf-owner",    "email": "owner@partner.test",    "name": "정대표", "role": "PARTNER_OWNER",  "partnerId": "ptn-001" },
+    { "id": "stf-editor",   "email": "editor@partner.test",   "name": "한담당", "role": "PARTNER_EDITOR", "partnerId": "ptn-001", "scope": { "experienceIds": ["exp-001"] } },
+    { "id": "stf-venue",    "email": "venue@partner.test",    "name": "오현장", "role": "VENUE_STAFF",    "partnerId": "ptn-001", "scope": { "venueIds": ["ven-001"] } },
+    { "id": "stf-reviewer", "email": "reviewer@ops.test",     "name": "윤심사", "role": "OPS_REVIEWER" },
+    { "id": "stf-cs",       "email": "cs@ops.test",           "name": "장지원", "role": "OPS_CS" },
+    { "id": "stf-finance",  "email": "finance@ops.test",      "name": "서정산", "role": "OPS_FINANCE" },
+    { "id": "stf-admin",    "email": "admin@ops.test",        "name": "임관리", "role": "OPS_ADMIN" }
+  ],
+  "roleGrants": [
+    {
+      "$comment": "READ_ONLY_AUDITOR는 한시 역할이다. 유효한 것과 만료된 것을 함께 둬야 CORE-AC-24(만료 후 거부)를 재현할 수 있다.",
+      "id": "grn-001", "userId": "stf-auditor-a", "email": "auditor.active@ops.test", "name": "감사열람A",
+      "role": "READ_ONLY_AUDITOR",
+      "startOffsetMinutes": -10080, "endOffsetMinutes": 10080,
+      "reason": "2026년 3분기 정산 감사", "approvedBy": "stf-admin",
+      "expect": "유효 — 승인 범위 안에서 읽기만 된다"
+    },
+    {
+      "id": "grn-002", "userId": "stf-auditor-b", "email": "auditor.expired@ops.test", "name": "감사열람B",
+      "role": "READ_ONLY_AUDITOR",
+      "startOffsetMinutes": -20160, "endOffsetMinutes": -1,
+      "reason": "2026년 2분기 정산 감사", "approvedBy": "stf-admin",
+      "expect": "만료 — 철회 행위가 없어도 거부된다(CORE-AC-24, 06 §8.6)"
+    }
+  ]
+}
