@@ -13,7 +13,7 @@ dist/
 .npmrc.local
 
 # 생성물
-/contract/generated/
+/api-spec/generated/
 *.tsbuildinfo
 
 # 테스트

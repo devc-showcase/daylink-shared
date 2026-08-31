@@ -12,9 +12,9 @@ DayLink 프로젝트의 **명세·자산·문서**를 담는 저장소다. 다�
 | `tokens/` | 디자인 토큰, 아이콘, 이미지 비율 | `@daylink/tokens` (npm) |
 | `fixtures/` | 시드 데이터, 테스트 계정 | `@daylink/fixtures` (npm) |
 | `e2e/` | 네 구현 공통 E2E 시나리오 (Playwright) | 배포하지 않음 |
-| `docs/prd/` | **Notion 링크만.** 원본은 Notion (ADR-0012) | 배포하지 않음 |
+| `docs/prd/` | PRD `00`~`06`, 화면 목록 IA, 결정 기록 | 배포하지 않음 |
 | `docs/adr/` | 아키텍처 결정 기록 | 배포하지 않음 |
-| `docs/journal/` | **Notion 링크만.** 원본은 Notion (ADR-0012) | 배포하지 않음 |
+| `docs/journal/` | 학습 커리큘럼, 운영 가이드, 비교 기록 | 배포하지 않음 |
 
 ## 소비하는 저장소
 
@@ -51,12 +51,12 @@ SemVer를 쓴다. 명세의 **호환 불가 변경은 major**, 필드·엔드포
 
 ## 문서를 읽는 순서
 
-제품 요구(PRD)와 학습 기록(journal)의 **원본은 Notion**이다 — [DayLink 묶음](https://app.notion.com/p/3c9af54d93a081299340c907da2bb16d). 근거는 [ADR-0012](docs/adr/0012-documents-live-in-notion.md).
+1. [`docs/prd/00-DayLink-PRD-개요.md`](docs/prd/00-DayLink-PRD-개요.md) — 제품 경계와 공통 정책. 최상위 문서다
+2. [`docs/prd/01`](docs/prd/01-DayLink-B2C-PRD.md) · [`02`](docs/prd/02-DayLink-Admin-PRD.md) — 두 제품의 요구사항과 화면 목록
+3. [`docs/prd/06`](docs/prd/06-DayLink-CoreAPI-PRD.md) — Core API 요구사항. 동시성·멱등성이 여기 있다
+4. [`docs/adr/README.md`](docs/adr/README.md) — 기술 결정과 그 근거
+5. [`docs/journal/`](docs/journal/) — 학습 계획과 진행 기록
 
-1. [00 제품 기획 개요](https://app.notion.com/p/3c9af54d93a081aa8be7cacc034a9a52) — 제품 경계와 공통 정책. 최상위 문서다
-2. [01 B2C](https://app.notion.com/p/3c9af54d93a081189d2ece9374ac1819) · [02 Admin](https://app.notion.com/p/3c9af54d93a08110a6e1ec72f1a11f5a) — 두 제품의 요구사항과 화면 목록
-3. [06 Core API](https://app.notion.com/p/3c9af54d93a08120b6dcd3ee147045d3) — Core API 요구사항. 동시성·멱등성이 여기 있다
-4. [`docs/adr/README.md`](docs/adr/README.md) — 기술 결정과 그 근거. **이건 저장소가 원본이다**
-5. [journal](https://app.notion.com/p/3c9af54d93a08188a746c645bc145cd1) — 학습 계획과 진행 기록
+문서의 **원본은 이 저장소이고 git이 버전을 남긴다**([ADR-0013](docs/adr/0013-documents-live-in-repo.md)). [Notion DayLink](https://app.notion.com/p/3c9af54d93a081299340c907da2bb16d)에 읽기용 사본이 있으나 거기서 고치지 않는다.
 
 **충돌 시 `00`이 최상위다.** PRD와 ADR이 어긋나면 PRD가 우선하고, 그 사실을 ADR에 기록한다.
