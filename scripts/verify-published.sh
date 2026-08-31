@@ -41,6 +41,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 FAILED=0
 RESULTS=""
+NPM_ERR=""
 
 record() { # 상태 항목 상세
   RESULTS="${RESULTS}$1\t$2\t$3\n"
@@ -60,13 +61,63 @@ echo "대상 버전: $VERSION"
 echo
 
 # ─────────────────────────────────────────────────────────────
+# 0. 토큰 점검 — 403과 401을 가른다
+#
+#    401 = 인증 실패(토큰이 틀렸다)
+#    403 = 인증은 됐는데 권한이 없다(범위·토큰 종류·조직 설정)
+#    둘을 뭉뚱그리면 엉뚱한 곳을 고치게 된다.
+# ─────────────────────────────────────────────────────────────
+echo "[0/3] 토큰 점검"
+CODE="$(curl -s -o "$TMP/user.json" -w '%{http_code}' \
+        -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user || echo 000)"
+
+if [ "$CODE" = "200" ]; then
+  LOGIN="$(node -p "require('$TMP/user.json').login" 2>/dev/null || echo '?')"
+  record PASS "토큰: 인증" "$LOGIN"
+
+  # 기본 인증의 사용자명이 토큰 주인과 다르면 GitHub Packages가 403을 준다.
+  if [ "$LOGIN" != "$GITHUB_ACTOR" ]; then
+    record FAIL "토큰: GITHUB_ACTOR 일치" "토큰 주인은 '$LOGIN' 인데 GITHUB_ACTOR='$GITHUB_ACTOR'"
+  else
+    record PASS "토큰: GITHUB_ACTOR 일치" "$LOGIN"
+  fi
+
+  # classic 토큰만 이 헤더를 준다. 비어 있으면 fine-grained 토큰이다.
+  SCOPES="$(curl -sI -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user \
+            | grep -i '^x-oauth-scopes:' | sed 's/^[^:]*: *//' | tr -d '\r')"
+  if [ -z "$SCOPES" ]; then
+    record FAIL "토큰: 종류" "fine-grained 토큰으로 보인다 — Packages 레지스트리는 classic 토큰을 쓴다"
+  elif echo "$SCOPES" | grep -q 'read:packages'; then
+    record PASS "토큰: read:packages 범위" "$SCOPES"
+  else
+    record FAIL "토큰: read:packages 범위" "현재 범위 = ${SCOPES:-없음}"
+  fi
+
+  # 조직이 이 토큰에 패키지를 보여 주는지.
+  PCODE="$(curl -s -o "$TMP/pkgs.json" -w '%{http_code}' \
+           -H "Authorization: Bearer $GITHUB_TOKEN" \
+           "https://api.github.com/orgs/$OWNER/packages?package_type=maven" || echo 000)"
+  case "$PCODE" in
+    200) record PASS "조직 패키지 목록 조회" "HTTP 200" ;;
+    403) record FAIL "조직 패키지 목록 조회" "HTTP 403 — 범위 부족이거나 조직이 토큰 접근을 막고 있다" ;;
+    *)   record FAIL "조직 패키지 목록 조회" "HTTP $PCODE" ;;
+  esac
+elif [ "$CODE" = "401" ]; then
+  record FAIL "토큰: 인증" "HTTP 401 — 토큰 값이 틀렸거나 만료됐다"
+else
+  record FAIL "토큰: 인증" "HTTP $CODE"
+fi
+echo
+
+# ─────────────────────────────────────────────────────────────
 # 1. Maven — com.daylink:api-spec
 # ─────────────────────────────────────────────────────────────
 echo "[1/3] Maven com.daylink:api-spec:$VERSION"
 JAR="$TMP/api-spec.jar"
 JAR_URL="$MAVEN_HOST/$OWNER/$REPO/com/daylink/api-spec/$VERSION/api-spec-$VERSION.jar"
 
-if curl -fsSL -u "$GITHUB_ACTOR:$GITHUB_TOKEN" -o "$JAR" "$JAR_URL"; then
+MCODE="$(curl -sSL -u "$GITHUB_ACTOR:$GITHUB_TOKEN" -o "$JAR" -w '%{http_code}' "$JAR_URL" 2>/dev/null || echo 000)"
+if [ "$MCODE" = "200" ] && [ -s "$JAR" ]; then
   record PASS "maven: 내려받기" "$(wc -c < "$JAR" | tr -d ' ') 바이트"
   mkdir -p "$TMP/jar" && (cd "$TMP/jar" && unzip -qo "$JAR")
 
@@ -86,7 +137,13 @@ if curl -fsSL -u "$GITHUB_ACTOR:$GITHUB_TOKEN" -o "$JAR" "$JAR_URL"; then
     record FAIL "maven: daylink/errors.md 존재" "없음"
   fi
 else
-  record FAIL "maven: 내려받기" "실패 — 토큰 범위(read:packages)와 버전을 확인한다"
+  case "$MCODE" in
+    401) HINT="인증 실패 — 토큰 값" ;;
+    403) HINT="권한 거부 — 토큰 종류·범위 또는 GITHUB_ACTOR (위 [0/3] 참조)" ;;
+    404) HINT="그 좌표에 아티팩트가 없다 — 버전 $VERSION 이 배포됐는지 확인" ;;
+    *)   HINT="네트워크 또는 알 수 없는 오류" ;;
+  esac
+  record FAIL "maven: 내려받기" "HTTP $MCODE — $HINT"
 fi
 echo
 
@@ -104,7 +161,10 @@ export npm_config_userconfig="$NPMRC"
 fetch_npm() { # 패키지이름 → tar 목록을 stdout으로
   local pkg="$1" dir="$2"
   mkdir -p "$dir"
-  ( cd "$dir" && npm pack "@devc-showcase/$pkg@$VERSION" --silent >/dev/null 2>&1 ) || return 1
+  ( cd "$dir" && npm pack "@devc-showcase/$pkg@$VERSION" >"$dir/npm.log" 2>&1 ) || {
+    NPM_ERR="$(grep -iE 'code E[0-9]{3}|401|403|404|Unauthorized|Forbidden|not found' "$dir/npm.log" | head -1 | cut -c1-90)"
+    return 1
+  }
   local tgz
   tgz="$(ls "$dir"/*.tgz 2>/dev/null | head -1)"
   [ -n "$tgz" ] || return 1
@@ -142,7 +202,7 @@ if fetch_npm api-spec "$TMP/npm-spec"; then
     record FAIL "npm(api-spec): openapi.yaml 존재" "없음"
   fi
 else
-  record FAIL "npm(api-spec): 내려받기" "실패"
+  record FAIL "npm(api-spec): 내려받기" "${NPM_ERR:-실패}"
 fi
 echo
 
@@ -172,7 +232,7 @@ if fetch_npm fixtures "$TMP/npm-fix"; then
     fi
   done
 else
-  record FAIL "npm(fixtures): 내려받기" "실패"
+  record FAIL "npm(fixtures): 내려받기" "${NPM_ERR:-실패}"
 fi
 echo
 
