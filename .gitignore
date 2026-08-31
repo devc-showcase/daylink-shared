@@ -14,7 +14,6 @@ dist/
 
 # 생성물 — 빌드 시점에 만든다. 커밋하지 않는다(ADR-0015)
 /api-spec/dist/
-/api-spec/generated/
 *.tsbuildinfo
 
 # Gradle
