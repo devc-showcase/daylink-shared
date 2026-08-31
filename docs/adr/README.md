@@ -14,12 +14,13 @@ DayLink 프로젝트의 **기술 판단**을 기록하는 곳이다. 제품 요�
 | [0006](0006-persistence-tool-mybatis.md) | 명시적 SQL 도구로 MyBatis를 쓴다 | 유효 | 2026-08-24 |
 | [0007](0007-transaction-boundary-and-rollback.md) | 트랜잭션 경계와 롤백 규칙을 고정하고, 원자성은 격리 수준이 아니라 문장으로 얻는다 | 유효 | 2026-08-31 |
 | [0009](0009-build-and-test-toolchain.md) | 빌드·테스트 도구를 고정하고 버전을 잠금 파일로 관리한다 | 유효 | 2026-08-24 |
-| [0010](0010-schema-migration-liquibase.md) | 스키마 마이그레이션은 Liquibase로 하고 changelog는 SQL 형식으로 쓴다 | 유효 | 2026-08-31 |
+| [0010](0010-schema-migration-liquibase.md) | 스키마 마이그레이션은 Liquibase로 하고 changelog는 SQL 형식으로 쓴다 | 유효 (루트 형식은 → 0016) | 2026-08-31 |
 | [0011](0011-shared-spec-folder-naming.md) | 공유 규격의 폴더·패키지 이름을 `api-spec`으로 한다 | 유효 | 2026-08-26 |
 | [0012](0012-documents-live-in-notion.md) | 제품 문서의 원본을 Notion에 두고 저장소에는 사본을 두지 않는다 | 대체됨 (→ 0013) | 2026-08-27 |
 | [0013](0013-documents-live-in-repo.md) | 문서의 원본은 저장소에 두고 Notion은 읽기용 사본으로 삼는다 | 유효 | 2026-08-28 |
 | [0014](0014-slot-naming.md) | 회차의 영어 식별자를 `Slot`으로 한다 | 유효 | 2026-08-31 |
 | [0015](0015-package-naming-and-registry.md) | 패키지를 GitHub Packages에 `@devc-showcase` 스코프로 배포한다 | 유효 | 2026-08-31 |
+| [0016](0016-changelog-root-format.md) | 루트 changelog만 YAML로 두고 변경 정의는 전부 SQL 파일에 둔다 | 유효 | 2026-08-31 |
 
 ## 쓰는 법
 
