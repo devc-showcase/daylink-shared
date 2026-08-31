@@ -72,15 +72,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # 세 곳에 적힌 버전이 갈라지면 패키지마다 다른 버전이 나간다.
+      # 네 곳에 적힌 버전이 갈라지면 패키지마다 다른 버전이 나간다.
       # 배포 시점이 아니라 여기서 잡는다.
-      - name: 저장소 버전이 세 곳에서 같은지 확인
+      #
+      # openapi.yaml의 info.version이 네 번째로 들어온 이유:
+      #   이 값은 jar와 npm 패키지 안으로 그대로 들어가 소비자가 읽는다.
+      #   0.2.0 배포본에 0.1.0이 실려 나간 일이 실제로 있었고, 그것을
+      #   daylink-core-api가 의존성을 소비하다가 발견했다. 파일 셋만 맞춰서는
+      #   "명세가 자기를 몇 번이라고 말하는가"가 검사되지 않는다.
+      - name: 저장소 버전이 네 곳에서 같은지 확인
         run: |
           SPEC=$(node -p "require('./api-spec/package.json').version")
           FIX=$(node -p "require('./fixtures/package.json').version")
           GRADLE=$(grep '^sharedVersion=' gradle.properties | cut -d= -f2)
-          echo "api-spec=$SPEC fixtures=$FIX gradle=$GRADLE"
-          if [ "$SPEC" != "$GRADLE" ] || [ "$FIX" != "$GRADLE" ]; then
-            echo "::error::버전 불일치 — api-spec=$SPEC, fixtures=$FIX, gradle.properties=$GRADLE"
+          INFO=$(awk '/^info:/{f=1;next} f&&/^  version:/{print $2;exit}' api-spec/openapi.yaml)
+          echo "api-spec=$SPEC fixtures=$FIX gradle=$GRADLE openapi=$INFO"
+          if [ "$SPEC" != "$GRADLE" ] || [ "$FIX" != "$GRADLE" ] || [ "$INFO" != "$GRADLE" ]; then
+            echo "::error::버전 불일치 — api-spec=$SPEC, fixtures=$FIX, gradle.properties=$GRADLE, openapi.yaml=$INFO"
             exit 1
           fi

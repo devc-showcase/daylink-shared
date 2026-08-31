@@ -1,6 +1,6 @@
 {
   "name": "@devc-showcase/api-spec",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "DayLink Core API 명세와 여기서 생성한 TypeScript 타입",
   "license": "UNLICENSED",
   "type": "module",

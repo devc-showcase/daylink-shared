@@ -33,9 +33,12 @@ jobs:
           SPEC=$(node -p "require('./api-spec/package.json').version")
           FIX=$(node -p "require('./fixtures/package.json').version")
           GRADLE=$(grep '^sharedVersion=' gradle.properties | cut -d= -f2)
-          echo "tag=$TAG api-spec=$SPEC fixtures=$FIX gradle=$GRADLE"
-          if [ "$TAG" != "$SPEC" ] || [ "$TAG" != "$FIX" ] || [ "$TAG" != "$GRADLE" ]; then
-            echo "::error::버전 불일치 — tag=$TAG, api-spec=$SPEC, fixtures=$FIX, gradle=$GRADLE"
+          # 명세 자신이 선언한 버전. jar 안으로 그대로 들어가므로 소비자가 읽는 값이다.
+          # info 블록의 첫 version 키를 집는다 — 다른 곳의 version과 섞이지 않게 범위를 좁혔다.
+          INFO=$(awk '/^info:/{f=1;next} f&&/^  version:/{print $2;exit}' api-spec/openapi.yaml)
+          echo "tag=$TAG api-spec=$SPEC fixtures=$FIX gradle=$GRADLE openapi=$INFO"
+          if [ "$TAG" != "$SPEC" ] || [ "$TAG" != "$FIX" ] || [ "$TAG" != "$GRADLE" ] || [ "$TAG" != "$INFO" ]; then
+            echo "::error::버전 불일치 — tag=$TAG, api-spec=$SPEC, fixtures=$FIX, gradle=$GRADLE, openapi.yaml=$INFO"
             exit 1
           fi
           echo "version=$TAG" >> "$GITHUB_OUTPUT"
