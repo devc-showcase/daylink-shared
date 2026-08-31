@@ -60,6 +60,66 @@ for (const b of bookings.bookings) {
 
 for (const c of bookings.checkInEvents) check(bookingIds.has(c.bookingId), `${c.id} → 없는 booking`);
 
+// ─────────────────────────────────────────────────────────────
+// 상태 값이 명세의 enum 안에 있는지 — 어휘가 갈리는 것을 막는다
+//
+// 왜 필요한가: 시드에 salesStatus: "SUSPENDED"가 있었는데 명세의 enum은
+// [ON_SALE, PAUSED, CLOSED]였다. 참조 무결성도 금액 공식도 통과하는 값이라
+// 아무 검사에도 안 걸렸고, Core API가 스키마를 쓸 때에야 드러났다.
+// 06 §9.1이 명세를 먼저 확정하라고 한 이상, 시드도 그 어휘를 따라야 한다.
+//
+// YAML 파서를 쓰지 않는 이유: fixtures는 의존성 없이 도는 패키지다
+// (CI의 fixtures 잡은 npm ci를 하지 않는다). 그래서 원문에서 직접 뽑는다.
+// ─────────────────────────────────────────────────────────────
+let specText = null;
+try {
+  specText = readFileSync(new URL('../api-spec/openapi.yaml', import.meta.url), 'utf8');
+} catch {
+  // 배포된 패키지 안에서는 명세가 옆에 없다. 그때는 이 검사를 건너뛴다.
+  console.warn('  · openapi.yaml을 찾지 못해 enum 대조를 건너뛴다');
+}
+
+if (specText) {
+  // 스키마 블록만 잘라낸 뒤 그 안에서 프로퍼티의 enum을 찾는다.
+  // 블록으로 자르지 않으면 뒤쪽 스키마의 같은 이름 프로퍼티를 집을 수 있다.
+  const blockOf = (schema) => {
+    const start = specText.indexOf(`\n    ${schema}:\n`);
+    if (start < 0) return null;
+    const rest = specText.slice(start + 1);
+    const next = rest.search(/\n    [A-Za-z_][A-Za-z0-9_]*:\n/);
+    return next < 0 ? rest : rest.slice(0, next);
+  };
+
+  const enumOf = (schema, prop) => {
+    const block = blockOf(schema);
+    if (!block) return null;
+    const at = block.indexOf(`\n        ${prop}:\n`);
+    if (at < 0) return null;
+    // enum은 여러 줄에 걸칠 수 있다.
+    const m = /enum:\s*\[([^\]]+)\]/.exec(block.slice(at, at + 600));
+    return m ? new Set(m[1].split(',').map((x) => x.trim())) : null;
+  };
+
+  const inEnum = (schema, prop, rows, field, label) => {
+    const allowed = enumOf(schema, prop);
+    if (!allowed) {
+      fail.push(`명세에서 ${schema}.${prop}의 enum을 찾지 못했다 — 명세가 바뀌었는지 확인한다`);
+      return;
+    }
+    for (const r of rows) {
+      const v = r[field];
+      if (v === null || v === undefined) continue;
+      check(allowed.has(v), `${label} ${r.id ?? r.code} ${field}="${v}" 는 명세 ${schema}.${prop} 밖이다 [${[...allowed].join(', ')}]`);
+    }
+  };
+
+  inEnum('Slot',    'salesStatus',      catalog.slots,     'salesStatus',      'slot');
+  inEnum('Booking', 'bookingStatus',    bookings.bookings, 'bookingStatus',    'booking');
+  inEnum('Booking', 'paymentStatus',    bookings.bookings, 'paymentStatus',    'booking');
+  inEnum('Booking', 'refundStatus',     bookings.bookings, 'refundStatus',     'booking');
+  inEnum('Booking', 'attendanceStatus', bookings.bookings, 'attendanceStatus', 'booking');
+}
+
 const allIds = [...catalog.slots.map((s) => s.id), ...bookings.bookings.map((b) => b.id)];
 check(allIds.length === new Set(allIds).size, '중복 ID 있음');
 

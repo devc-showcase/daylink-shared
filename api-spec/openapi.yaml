@@ -11,7 +11,7 @@ openapi: 3.1.0
 
 info:
   title: DayLink Core API
-  version: 0.2.1
+  version: 0.2.2
   description: |
     DayLink의 업무 규칙을 판정하는 단일 권위자.
     가격·재고·권한·상태 전이·정산은 전부 이 서버가 결정한다(00 §8).

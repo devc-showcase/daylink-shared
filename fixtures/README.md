@@ -43,7 +43,7 @@ daylink DB
 | `slt-lastseat` 잔여 1석 | `CORE-AC-01` 마지막 좌석 동시 요청 50건 중 1건만 성공 |
 | `slt-std-73h` · `slt-std-71h` · `slt-std-23h` | `00 §6.4` STANDARD 경계 — 환불률 100 / 50 / 0% |
 | `slt-flx-25h` · `slt-flx-23h` | FLEXIBLE 24시간 경계 |
-| `slt-suspended` | `SLOT_NOT_BOOKABLE` 409 |
+| `slt-paused` | `SLOT_NOT_BOOKABLE` 409 |
 | `grn-001` · `grn-002` | `CORE-AC-24` 한시 역할 만료 — 철회 없이도 거부 |
 | `bkg-refund-partial` | `00 §7.4` 취소됐지만 환불은 일부만 성공 |
 | `bkg-flex-half` | 쿠폰 적용 시 환불 기준이 결제액 `C`이지 총액 `G`가 아님 |
