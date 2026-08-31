@@ -1,0 +1,71 @@
+# 명세 검증 — 배포하지 않는다.
+#
+# 경로 필터를 건 이유: docs/ 변경으로 이 워크플로가 돌 이유가 없다(ADR-0005).
+# 문서 수정 커밋이 잦은 저장소라 필터가 없으면 CI 결과가 소음이 된다.
+name: validate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api-spec/**'
+      - 'tokens/**'
+      - 'fixtures/**'
+      - '.github/workflows/**'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+  pull_request:
+    paths:
+      - 'api-spec/**'
+      - 'tokens/**'
+      - 'fixtures/**'
+      - '.github/workflows/**'
+
+jobs:
+  spec:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-spec
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: api-spec/package-lock.json
+
+      # npm ci는 package-lock.json을 그대로 쓴다. install과 달리 잠금 파일을
+      # 고쳐 쓰지 않으므로 CI와 로컬이 같은 버전을 본다(ADR-0009).
+      - run: npm ci
+
+      - name: OpenAPI 문법 검증
+        run: npm run lint
+
+      - name: 타입 생성이 실제로 되는지 확인
+        run: npm run generate
+
+      # 생성물을 커밋하면 원본과 어긋난다. CI가 그것을 막는다.
+      - name: 생성물이 커밋되지 않았는지 확인
+        run: |
+          if git ls-files --error-unmatch dist >/dev/null 2>&1; then
+            echo "::error::dist/가 커밋되어 있습니다. 생성물은 빌드 시점에 만듭니다(api-spec/README.md)."
+            exit 1
+          fi
+
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # 두 곳에 적힌 버전이 갈라지면 npm과 Maven이 다른 버전을 배포한다.
+      # 배포 시점이 아니라 여기서 잡는다.
+      - name: package.json과 gradle.properties의 버전 일치
+        run: |
+          NPM=$(node -p "require('./api-spec/package.json').version")
+          GRADLE=$(grep '^apiSpecVersion=' gradle.properties | cut -d= -f2)
+          echo "npm=$NPM gradle=$GRADLE"
+          if [ "$NPM" != "$GRADLE" ]; then
+            echo "::error::버전 불일치 — package.json=$NPM, gradle.properties=$GRADLE"
+            exit 1
+          fi

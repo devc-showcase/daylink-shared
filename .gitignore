@@ -29,3 +29,6 @@ dist/
 # 임시
 *.log
 tmp/
+
+# Gradle wrapper 캐시
+/.gradle/
