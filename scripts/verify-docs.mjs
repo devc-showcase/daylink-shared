@@ -1,0 +1,194 @@
+#!/usr/bin/env node
+// 문서 정합성 검사기.
+//
+// validate.yml이 보는 것(명세 문법·타입 생성·시드 무결성·버전 네 곳)은 여기서 다시 보지 않는다.
+// 이 스크립트는 문서끼리 어긋나는 것만 본다 — 사람이 눈으로 훑어서는 놓치는 종류다.
+//
+//   node scripts/verify-docs.mjs
+//
+// 종료 코드: 어긋난 것이 있으면 1, 없으면 0.
+
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
+import { join, relative, basename } from 'node:path'
+
+const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '')
+const DOCS = join(ROOT, 'docs')
+
+// 화면 수 정본. docs/prd/README.md와 01 §4.2 + 02 §4.1~4.4 실측이 기준이다.
+const SCREENS = { define: 84, build: 168 }
+// 화면 수를 말하면서 등장하면 낡은 값인 것들. 79·83은 옛 정의 수, 158·166은 옛 구현벌 수다.
+const STALE_SCREEN_NUMBERS = [79, 83, 158, 166]
+
+const problems = []
+const report = (kind, file, line, msg) =>
+  problems.push({ kind, file: relative(ROOT, file), line, msg })
+
+/** archive와 node_modules를 뺀 마크다운 전부 */
+function markdownFiles(dir) {
+  const out = []
+  for (const name of readdirSync(dir)) {
+    if (name === 'node_modules' || name === 'archive' || name === 'dist') continue
+    const path = join(dir, name)
+    if (statSync(path).isDirectory()) out.push(...markdownFiles(path))
+    else if (name.endsWith('.md')) out.push(path)
+  }
+  return out
+}
+
+const files = [
+  ...markdownFiles(DOCS),
+  ...['README.md', 'CLAUDE.md']
+    .map((n) => join(ROOT, n))
+    .filter(existsSync),
+  ...markdownFiles(join(ROOT, 'api-spec')),
+  ...markdownFiles(join(ROOT, 'fixtures')),
+]
+
+const text = new Map(files.map((f) => [f, readFileSync(f, 'utf8')]))
+const lines = (f) => text.get(f).split('\n')
+
+// ── 1. 문서 버전 수집 ────────────────────────────────────────────
+// `| 문서 버전 | 2.2 |` 형태. 파이프 정렬은 문서마다 다르다.
+const versionOf = new Map() // '00' -> '2.2'
+const numberOf = new Map() // '00' -> 파일 경로
+for (const f of files) {
+  const b = basename(f)
+  const m = b.match(/^(\d{2})-/)
+  if (!m) continue
+  numberOf.set(m[1], f)
+  const v = text.get(f).match(/^\|\s*문서 버전\s*\|\s*([\d.]+)\s*\|/m)
+  if (v) versionOf.set(m[1], v[1])
+}
+
+// ADR은 결정 시점의 기록이다. "이미 쓴 ADR은 고치지 않는다"(docs/adr/README.md)가
+// 규칙이므로, 옛 이름과 옛 수치가 남아 있는 것이 정상이다. 내용 검사에서 뺀다.
+const isAdr = (f) => f.includes(`${DOCS}/adr/`)
+
+// ── 2. 상위 문서 버전 참조가 실제 버전과 맞는지 ──────────────────
+// "상위 문서"·"기준 문서" 행만 본다. 다른 줄의 `NN`과 v가 우연히 만나면 짝이 틀어진다.
+// 한 행에 여러 쌍이 있으므로(`00` v2.2, `01`·`02` v2.1, …) 쉼표로 끊어 쌍 단위로 본다.
+for (const f of files) {
+  lines(f).forEach((line, i) => {
+    if (!/상위 문서|기준 문서/.test(line)) return
+    for (const chunk of line.split(/[,，]/)) {
+      const ver = chunk.match(/\bv(\d+\.\d+)/)
+      if (!ver) continue
+      const refs = [...chunk.matchAll(/`(\d{2})(?:-[^`]*\.md)?`/g)].map((m) => m[1])
+      for (const num of refs) {
+        const actual = versionOf.get(num)
+        if (actual && actual !== ver[1]) {
+          report(
+            '상위 문서 버전',
+            f,
+            i + 1,
+            `\`${num}\`을 v${ver[1]}로 참조하는데 실제는 v${actual}이다`,
+          )
+        }
+      }
+    }
+  })
+}
+
+// ── 3. 패키지 스코프 잔재 ────────────────────────────────────────
+// ADR-0015가 @devc-showcase로 확정했다. @daylink는 옛 이름이다.
+for (const f of files) {
+  if (isAdr(f)) continue
+  lines(f).forEach((line, i) => {
+    if (line.includes('@daylink/')) {
+      report('패키지 스코프', f, i + 1, '`@daylink/`는 옛 이름이다 (ADR-0015 → `@devc-showcase/`)')
+    }
+  })
+}
+
+// ── 4. 화면 수 표기 ──────────────────────────────────────────────
+// `79 → 84`처럼 변화를 적은 줄은 옛 값이 나오는 게 맞다. 화살표가 있으면 넘긴다.
+for (const f of files) {
+  if (isAdr(f)) continue
+  lines(f).forEach((line, i) => {
+    if (!/화면|정의|구현벌/.test(line)) return
+    if (/→|->/.test(line)) return
+    for (const stale of STALE_SCREEN_NUMBERS) {
+      if (new RegExp(`(?<![\\d.])${stale}(?![\\d.%])`).test(line)) {
+        report(
+          '화면 수',
+          f,
+          i + 1,
+          `낡은 값 ${stale}이 화면 문맥에 있다 (현행 ${SCREENS.define} 정의 / ${SCREENS.build} 구현벌)`,
+        )
+      }
+    }
+  })
+}
+
+// ── 5. ADR 상태표와 파일 머리말이 같은지 ─────────────────────────
+const adrDir = join(DOCS, 'adr')
+const adrReadme = join(adrDir, 'README.md')
+if (existsSync(adrReadme)) {
+  const statusInTable = new Map()
+  for (const line of readFileSync(adrReadme, 'utf8').split('\n')) {
+    const m = line.match(/^\|\s*\[(\d{4})\]\([^)]+\)\s*\|[^|]*\|\s*([^|]+?)\s*\|/)
+    if (m) statusInTable.set(m[1], m[2])
+  }
+  for (const name of readdirSync(adrDir)) {
+    const m = name.match(/^(\d{4})-.*\.md$/)
+    if (!m) continue
+    const body = readFileSync(join(adrDir, name), 'utf8')
+    const head = body.match(/^\|\s*상태\s*\|\s*([^|]+?)\s*\|/m)
+    const table = statusInTable.get(m[1])
+    if (!head) {
+      report('ADR 상태', join(adrDir, name), 1, '머리말에 상태 행이 없다')
+      continue
+    }
+    if (table === undefined) {
+      report('ADR 상태', adrReadme, 1, `ADR-${m[1]}이 목록 표에 없다`)
+      continue
+    }
+    // "**유효** — 폴더 이름만 ADR-0011로 대체됨"은 유효다. 대시·괄호 앞의 판정어만 본다.
+    const norm = (s) =>
+      s.replace(/\*\*/g, '').split(/[—(]/)[0].includes('대체됨') ? '대체됨' : '유효'
+    if (norm(head[1]) !== norm(table)) {
+      report(
+        'ADR 상태',
+        join(adrDir, name),
+        1,
+        `파일은 "${norm(head[1])}"인데 목록 표는 "${norm(table)}"이다`,
+      )
+    }
+  }
+}
+
+// ── 6. 공통 규칙이 저장소 CLAUDE.md에 복사돼 있지 않은지 ─────────
+// 공통 규칙 정본은 작업 공간 루트의 CLAUDE.md다. 두 곳에 두면 한쪽만 고쳐진다.
+const repoClaude = join(ROOT, 'CLAUDE.md')
+if (existsSync(repoClaude)) {
+  const markers = ['국립국어원', '무생물을 주어로', '관형절을 두 개 이상']
+  const body = readFileSync(repoClaude, 'utf8')
+  for (const marker of markers) {
+    if (body.includes(marker)) {
+      report(
+        'CLAUDE.md 중복',
+        repoClaude,
+        1,
+        `공통 규칙("${marker}")이 저장소 파일에 복사돼 있다. 정본은 작업 공간 루트다`,
+      )
+    }
+  }
+}
+
+// ── 보고 ─────────────────────────────────────────────────────────
+if (problems.length === 0) {
+  console.log(`문서 정합성 검사 통과 — 파일 ${files.length}개`)
+  process.exit(0)
+}
+
+const byKind = new Map()
+for (const p of problems) {
+  if (!byKind.has(p.kind)) byKind.set(p.kind, [])
+  byKind.get(p.kind).push(p)
+}
+for (const [kind, list] of byKind) {
+  console.log(`\n[${kind}] ${list.length}건`)
+  for (const p of list) console.log(`  ${p.file}:${p.line}  ${p.msg}`)
+}
+console.log(`\n어긋난 곳 ${problems.length}건 — 파일 ${files.length}개를 검사했다.`)
+process.exit(1)
