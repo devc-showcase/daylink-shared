@@ -104,12 +104,29 @@ for (const f of files) {
 }
 
 // ── 4. 화면 수 표기 ──────────────────────────────────────────────
-// `79 → 84`처럼 변화를 적은 줄은 옛 값이 나오는 게 맞다. 화살표가 있으면 넘긴다.
+// 옛 값이 나오는 게 맞는 자리가 있다. 셋을 넘긴다.
+//   - `79 → 84`처럼 화살표로 변화를 적은 줄
+//   - 옛 값과 현행 값이 한 줄에 같이 있는 줄 (`| 화면 정의 | 79 | 84 |` 같은 이전/이후 표)
+//   - 다른 판본을 명시한 줄 (`v2.2에서 … 반영 (화면 83, 구현 166)`)
+// 그래도 남는 자리는 아래에 근거와 함께 적는다.
+const SCREEN_EXCEPTIONS = [
+  {
+    file: 'docs/journal/DayLink-Advisor-커리큘럼-v2.3.md',
+    contains: '94 (47 정의 × 2벌)',
+    why: '§0.2 v2.0↔v2.1 비교 표. 두 열 다 그 시점 값이라 현행으로 고치면 비교가 깨진다',
+  },
+]
+const isException = (f, line) =>
+  SCREEN_EXCEPTIONS.some((e) => f.endsWith(e.file) && line.includes(e.contains))
+
 for (const f of files) {
   if (isAdr(f)) continue
   lines(f).forEach((line, i) => {
     if (!/화면|정의|구현벌/.test(line)) return
     if (/→|->/.test(line)) return
+    if (/\bv\d+\.\d+/.test(line)) return
+    if (new RegExp(`(?<![\\d.])(${SCREENS.define}|${SCREENS.build})(?![\\d.%])`).test(line)) return
+    if (isException(f, line)) return
     for (const stale of STALE_SCREEN_NUMBERS) {
       if (new RegExp(`(?<![\\d.])${stale}(?![\\d.%])`).test(line)) {
         report(
