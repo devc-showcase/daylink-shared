@@ -56,8 +56,8 @@
       "categorySlug": "wellness",
       "unitPrice": 30000,
       "cancellationPolicy": "FLEXIBLE",
-      "status": "IN_REVIEW",
-      "note": "미게시 — SLOT_NOT_BOOKABLE 재현용"
+      "status": "SUBMITTED",
+      "note": "심사 제출 상태, 미게시 — SLOT_NOT_BOOKABLE 재현용"
     }
   ],
   "slots": [
@@ -158,7 +158,7 @@
       "confirmedSeats": 0,
       "heldSeats": 0,
       "salesStatus": "PAUSED",
-      "expect": "판매 일시 중지 — SLOT_NOT_BOOKABLE 409. 상품(exp-003)도 IN_REVIEW라 예약 불가 사유가 둘이다"
+      "expect": "판매 일시 중지 — SLOT_NOT_BOOKABLE 409. 상품(exp-003)도 SUBMITTED라 예약 불가 사유가 둘이다"
     }
   ]
 }
