@@ -65,11 +65,14 @@ for (const f of files) {
 const isAdr = (f) => f.includes(`${DOCS}/adr/`)
 
 // ── 2. 상위 문서 버전 참조가 실제 버전과 맞는지 ──────────────────
-// "상위 문서"·"기준 문서" 행만 본다. 다른 줄의 `NN`과 v가 우연히 만나면 짝이 틀어진다.
+// "상위 문서" 행만 본다. 다른 줄의 `NN`과 v가 우연히 만나면 짝이 틀어진다.
 // 한 행에 여러 쌍이 있으므로(`00` v2.2, `01`·`02` v2.1, …) 쉼표로 끊어 쌍 단위로 본다.
+//
+// "기준 문서"는 검사하지 않는다. 그 행은 문서를 쓸 당시 무엇을 근거로 삼았는지를
+// 적은 것이라, 상위 문서가 나중에 올라가도 그대로 두는 것이 맞다.
 for (const f of files) {
   lines(f).forEach((line, i) => {
-    if (!/상위 문서|기준 문서/.test(line)) return
+    if (!/상위 문서/.test(line)) return
     for (const chunk of line.split(/[,，]/)) {
       const ver = chunk.match(/\bv(\d+\.\d+)/)
       if (!ver) continue

@@ -430,9 +430,13 @@ npx @redocly/cli@latest lint api-spec/openapi.yaml
   → 파일이 커지면 `tags`로 나누거나 나중에 분할한다. 지금 나누면 얻는 것보다 잃는 것이 크다.
 
 - [x] 생성된 타입을 npm과 Maven 양쪽에 어떻게 배포할 것인가 (ADR-0005)
-  → ADR-0011이 패키지명을 `@daylink/api-spec`·`com.daylink:api-spec`으로 확정했다.
+  → ADR-0011이 이름을 `api-spec`으로 정하고, ADR-0015가 npm 스코프를
+    `@devc-showcase/api-spec`으로, Maven 좌표를 `com.daylink:api-spec`으로 확정했다.
+    GitHub Packages의 npm 레지스트리가 저장소 소유자와 같은 스코프만 받기 때문에
+    두 이름이 갈라진다.
     생성물은 커밋하지 않고 빌드 시점에 만든다(`api-spec/README.md`).
-    실제 배포 구성은 M1 후반 과제로 남는다.
+    배포 구성은 끝났다 — 태그를 밀면 `publish.yml`이 배포하고,
+    `scripts/verify-published.sh`가 배포본을 확인한다.
 
 ---
 

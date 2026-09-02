@@ -8,9 +8,9 @@ DayLink 프로젝트의 **명세·자산·문서**를 담는 저장소다. 다�
 
 | 경로 | 내용 | 배포 |
 |---|---|---|
-| `api-spec/` | OpenAPI 스펙 원본, 오류 코드 표 | `@daylink/api-spec` (npm) · `com.daylink:api-spec` (Maven) |
-| `tokens/` | 디자인 토큰, 아이콘, 이미지 비율 | `@daylink/tokens` (npm) |
-| `fixtures/` | 시드 데이터, 테스트 계정 | `@daylink/fixtures` (npm) |
+| `api-spec/` | OpenAPI 스펙 원본, 오류 코드 표 | `@devc-showcase/api-spec` (npm) · `com.daylink:api-spec` (Maven) |
+| `tokens/` | 디자인 토큰, 아이콘, 이미지 비율 | `@devc-showcase/tokens` (npm, 미배포) |
+| `fixtures/` | 시드 데이터, 테스트 계정 | `@devc-showcase/fixtures` (npm, 미배포) |
 | `e2e/` | 네 구현 공통 E2E 시나리오 (Playwright) | 배포하지 않음 |
 | `docs/prd/` | PRD `00`~`06`, 화면 목록 IA, 결정 기록 | 배포하지 않음 |
 | `docs/adr/` | 아키텍처 결정 기록 | 배포하지 않음 |
