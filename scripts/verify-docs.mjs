@@ -140,6 +140,18 @@ for (const f of files) {
   })
 }
 
+// ── 4.5 회차 엔터티 이름 ─────────────────────────────────────────
+// ADR-0014가 회차의 영어 식별자를 `Slot`으로 확정했다. `Session`은 인증 세션을
+// 가리킬 때만 쓴다. 개명 이력을 적은 줄(`Session`에서 바꿨다는 서술)은 넘긴다.
+for (const f of files) {
+  if (isAdr(f)) continue
+  lines(f).forEach((line, i) => {
+    if (!/`Session`/.test(line)) return
+    if (/인증 세션|HttpSession|개명|바꿨|였는데|원래/.test(line)) return
+    report('회차 엔터티 이름', f, i + 1, '`Session`은 ADR-0014가 `Slot`으로 개명했다')
+  })
+}
+
 // ── 5. ADR 상태표와 파일 머리말이 같은지 ─────────────────────────
 const adrDir = join(DOCS, 'adr')
 const adrReadme = join(adrDir, 'README.md')
