@@ -1,5 +1,7 @@
 # openapi.yaml 읽는 법
 
+> **작성 시점의 기록이다.** 예시로 든 명세 조각이 지금 `openapi.yaml`과 다른 자리가 있다 — `/holds/{holdId}`의 `delete`는 폐기됐고(`POST .../release`로 바뀌었다), `adminAuth`는 이제 `check-ins`·`slots`가 참조한다. **문법 설명 자체는 그대로 유효하다.** 현행 명세는 [`openapi.yaml`](openapi.yaml)을 본다.
+
 `POST /holds` 하나를 뜯어 OpenAPI 문법을 익힌다. **판단이 아니라 문법만 다룬다.** 무엇을 쓸지는 `design-checklist.md`가 묻는다.
 
 ---
