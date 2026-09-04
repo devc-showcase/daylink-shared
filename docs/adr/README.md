@@ -22,6 +22,7 @@ DayLink 프로젝트의 **기술 판단**을 기록하는 곳이다. 제품 요�
 | [0015](0015-package-naming-and-registry.md) | 패키지를 GitHub Packages에 `@devc-showcase` 스코프로 배포한다 | 유효 | 2026-08-31 |
 | [0016](0016-changelog-root-format.md) | 루트 changelog만 YAML로 두고 변경 정의는 전부 SQL 파일에 둔다 | 유효 | 2026-08-31 |
 | [0017](0017-swagger-ui-serves-the-spec.md) | Swagger UI는 화면만 가져오고, 코드에서 명세를 생성하지 않는다 | 유효 | 2026-09-01 |
+| [0018](0018-idempotency-key-lifetime.md) | 멱등 키는 24시간 살고, 만료된 키는 거부하며, 행은 7일 보관한다 | 유효 | 2026-09-04 |
 
 ## 쓰는 법
 

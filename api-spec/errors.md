@@ -35,6 +35,7 @@
 |---|:---:|:---:|---|---|
 | `IDEMPOTENCY_IN_PROGRESS` | 409 | **true** | 같은 키가 처리 중. 잠시 후 **같은 키로** 재시도 | 06 §8.2 |
 | `IDEMPOTENCY_KEY_REUSED` | 422 | false | 같은 키에 다른 본문 | CORE-AC-05 |
+| `IDEMPOTENCY_KEY_EXPIRED` | 410 | false | 유효 기간 24시간이 지난 키. **새 키로** 다시 보낸다 | ADR-0018 |
 
 ### 입력·상태
 

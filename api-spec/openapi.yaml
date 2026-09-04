@@ -121,6 +121,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410': { $ref: '#/components/responses/IdempotencyKeyExpired' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -271,6 +272,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410': { $ref: '#/components/responses/IdempotencyKeyExpired' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/ServerError' }
@@ -352,6 +354,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410': { $ref: '#/components/responses/IdempotencyKeyExpired' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/ServerError' }
@@ -527,6 +530,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410': { $ref: '#/components/responses/IdempotencyKeyExpired' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/ServerError' }
@@ -644,6 +648,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410': { $ref: '#/components/responses/IdempotencyKeyExpired' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
           description: |
@@ -732,6 +737,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410': { $ref: '#/components/responses/IdempotencyKeyExpired' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -887,6 +893,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '410': { $ref: '#/components/responses/IdempotencyKeyExpired' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -1483,6 +1490,16 @@ components:
         권한 없음. 다른 고객의 리소스에 접근하면 **존재 여부를 노출하지 않는다**
         (CORE-AC-10). 404와 403 중 무엇을 줄지는 리소스마다 정해야 한다 —
         design-checklist.md의 판단 항목이다.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    IdempotencyKeyExpired:
+      description: |
+        `IDEMPOTENCY_KEY_EXPIRED` — 멱등 키의 유효 기간 24시간이 지났다(ADR-0018).
+        저장된 응답을 재현해 주지 않는다. **새 키로** 다시 보내야 하므로
+        `retryable: false`다. 같은 키로 다시 보내면 계속 410이다.
+
+        그 요청이 실제로 처리됐는지는 조회 API로 확인한다(06 §9.3).
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
