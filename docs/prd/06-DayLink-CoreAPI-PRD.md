@@ -101,32 +101,34 @@ Core API를 두 벌로 만들면 프론트 구현 간 차이가 프레임워크 
 
 00 §7의 상태 모델과 01·02의 화면 요구에서 엔터티를 도출했다. 필드는 구현 시 확정하되 아래 책임 구분은 바뀌지 않는다.
 
-| 엔터티 | 책임 | 불변 여부 |
-|---|---|---|
-| `User` | 고객 계정 | 가변 |
-| `AdminUser` | Admin 계정 | 가변 |
-| `RoleGrant` | 역할·조직·장소 범위, 시작·종료일, 사유, 승인자 | **추가만** |
-| ↳ 비고 | `READ_ONLY_AUDITOR`가 시작·종료일·사유·승인자를 실제로 사용하는 역할이다. 나머지 역할은 상시 부여이므로 이 필드들이 사실상 비어 있다 | — |
-| `Partner` | 파트너 조직, 입점 상태 | 가변 |
-| `Venue` | 장소 | 가변 |
-| `Experience` | 상품 본체 | 가변 |
-| `ExperienceVersion` | 심사 제출 스냅숏과 공개본 | **불변** |
-| `Slot` | 회차, 정원, 판매 상태 | 가변 |
-| `Hold` | 재고 임시 확보 | 상태만 전이 |
-| `Booking` | 예약. 가격·정책·상품 스냅숏 보관 | 스냅숏 부분 **불변** |
-| `Payment` | 모의 결제 시도와 결과 | **추가만** |
-| `Refund` | 환불 요청과 처리 결과 | 상태만 전이 |
-| `Coupon` / `CouponIssue` | 쿠폰 정의와 발급·사용 | 사용 후 조건 **불변** |
-| `CheckInEvent` | 체크인·정정 이벤트 | **추가만** |
-| `Inquiry` | 예약 종속 문의. 유형·본문·상태 | 상태만 전이 |
-| `InquiryMessage` | 고객 문의와 운영자 답변 스레드 | **추가만** |
-| `AttendanceSnapshot` | 예약별 현재 출석 상태 | 이벤트에서 파생 |
-| `LedgerEntry` | 정산 원장 항목 | **불변** |
-| `AdjustmentEntry` | 원장 조정 항목 | **추가만** |
-| `Settlement` | 정산 기간 집계와 확정 상태 | 상태만 전이 |
-| `AuditLog` | 행위자·대상·전후·사유·추적 ID | **불변** |
-| `IdempotencyRecord` | 멱등 키와 저장된 응답 | 만료 |
-| `Job` | 비동기 작업 상태와 결과 파일 | 상태만 전이 |
+**`요구 근거` 열은 그 엔터티가 없으면 통과할 수 없는 인수조건이나 화면을 가리킨다.** 도출 경로를 되짚을 때 여기서 시작한다. 근거가 하나뿐인 엔터티는 그 요구가 사라지면 같이 검토 대상이 된다.
+
+| 엔터티 | 책임 | 불변 여부 | 요구 근거 |
+|---|---|------|
+| `User` | 고객 계정 | 가변 | B2C-AC-03 · B2C-AC-13 |
+| `AdminUser` | Admin 계정 | 가변 | ADM-AC-01 · ADM-AC-02 |
+| `RoleGrant` | 역할·조직·장소 범위, 시작·종료일, 사유, 승인자 | **추가만** | ADM-AC-01 · ADM-AC-15 |
+| ↳ 비고 | `READ_ONLY_AUDITOR`가 시작·종료일·사유·승인자를 실제로 사용하는 역할이다. 나머지 역할은 상시 부여이므로 이 필드들이 사실상 비어 있다 | — | |
+| `Partner` | 파트너 조직, 입점 상태 | 가변 | ADM-AC-03 |
+| `Venue` | 장소 | 가변 | ADM-AC-07 |
+| `Experience` | 상품 본체 | 가변 | B2C-AC-02 · ADM-AC-03 |
+| `ExperienceVersion` | 심사 제출 스냅숏과 공개본 | **불변** | ADM-AC-03 · ADM-AC-04 |
+| `Slot` | 회차, 정원, 판매 상태 | 가변 | B2C-AC-02 · ADM-AC-05 · ADM-AC-06 |
+| `Hold` | 재고 임시 확보 | 상태만 전이 | B2C-AC-04 · B2C-AC-07 |
+| `Booking` | 예약. 가격·정책·상품 스냅숏 보관 | 스냅숏 부분 **불변** | B2C-AC-08 · §4.2 |
+| `Payment` | 모의 결제 시도와 결과 | **추가만** | B2C-AC-05 · B2C-AC-06 |
+| `Refund` | 환불 요청과 처리 결과 | 상태만 전이 | B2C-AC-09 · ADM-AC-12 |
+| `Coupon` / `CouponIssue` | 쿠폰 정의와 발급·사용 | 사용 후 조건 **불변** | ADM-OPS-016 |
+| `CheckInEvent` | 체크인·정정 이벤트 | **추가만** | ADM-AC-08 · ADM-AC-10 |
+| `Inquiry` | 예약 종속 문의. 유형·본문·상태 | 상태만 전이 | §4.3 · B2C-INQ-001 |
+| `InquiryMessage` | 고객 문의와 운영자 답변 스레드 | **추가만** | §4.3 · ADM-OPS-022 |
+| `AttendanceSnapshot` | 예약별 현재 출석 상태 | 이벤트에서 파생 | B2C-AC-08 · ADM-AC-11 |
+| `LedgerEntry` | 정산 원장 항목 | **불변** | ADM-AC-13 |
+| `AdjustmentEntry` | 원장 조정 항목 | **추가만** | ADM-AC-13 |
+| `Settlement` | 정산 기간 집계와 확정 상태 | 상태만 전이 | ADM-AC-13 |
+| `AuditLog` | 행위자·대상·전후·사유·추적 ID | **불변** | ADM-AC-15 |
+| `IdempotencyRecord` | 멱등 키와 저장된 응답 | 만료 | B2C-AC-05 · B2C-AC-10 · ADM-AC-08 |
+| `Job` | 비동기 작업 상태와 결과 파일 | 상태만 전이 | ADM-COM-004 · ADM-AC-14 |
 
 ### 4.1 불변 원칙
 
@@ -152,6 +154,8 @@ Core API를 두 벌로 만들면 프론트 구현 간 차이가 프레임워크 
 | 환불 | `REQUESTED → APPROVAL_PENDING → PROCESSING → SUCCEEDED \| PARTIALLY_SUCCEEDED \| FAILED` |
 | 출석 | `NOT_CHECKED_IN → PARTIAL → COMPLETE`, `→ NO_SHOW`, `→ CORRECTED` |
 | 문의 | `RECEIVED → IN_PROGRESS → ANSWERED → CLOSED`, `RECEIVED → CLOSED`(중복·오접수) |
+
+문의를 네 단계로 나눈 것은 **CS 대기열이 그 구분을 요구하기 때문이다.** `/ops/inquiries`(ADM-OPS-022)가 미답변을 가려내야 하는데, 접수·착수·답변·종결이 각각 다른 행동을 부른다 — `RECEIVED`는 아무도 안 잡은 것이고, `IN_PROGRESS`는 담당자가 있으니 중복으로 잡지 않아야 하며, `ANSWERED`는 고객 회신을 기다리는 것이고, `CLOSED`만 대기열에서 빠진다. 셋으로 줄이면 대기열이 "안 잡힌 것"과 "잡혀 있는 것"을 구분하지 못한다.
 
 ### 5.1 상태를 합치지 않는다
 
