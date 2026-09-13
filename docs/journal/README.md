@@ -5,6 +5,7 @@
 - [DayLink 학습 커리큘럼 v2.3](DayLink-Advisor-커리큘럼-v2.3.md) — Advisor 산출물. 마일스톤 M1~M6
 - [DayLink × ALTER 운영 가이드 v1.0](DayLink-ALTER-운영가이드-v1.0.md)
 - [DayLink 문서 읽기·판단 절차 v1.0](DayLink-문서읽기-판단절차-v1.0.md)
+- [DayLink 학습 재고 조사 v1.0](DayLink-학습-재고조사-v1.0.md) — 2026-09-07 진단. 커리큘럼 회차 재설계의 출발점
 
 두 기술의 구현 차이 비교(`03 §9`·`04 §10`)도 여기 쌓인다. 비교 기록은 M2·M5 마무리 시점에 작성한다.
 
