@@ -15,7 +15,7 @@ DayLink 프로젝트의 **기술 판단**을 기록하는 곳이다. 제품 요�
 | [0007](0007-transaction-boundary-and-rollback.md) | 트랜잭션 경계와 롤백 규칙을 고정하고, 원자성은 격리 수준이 아니라 문장으로 얻는다 | 유효 | 2026-08-31 |
 | [0008](0008-frontend-libraries.md) | 프론트 라이브러리는 각 생태계 관용을 따르고, 비교는 층을 나눠 기록한다 | 유효 | 2026-09-04 |
 | [0009](0009-build-and-test-toolchain.md) | 빌드·테스트 도구를 고정하고 버전을 잠금 파일로 관리한다 | 유효 | 2026-08-24 |
-| [0010](0010-schema-migration-liquibase.md) | 스키마 마이그레이션은 Liquibase로 하고 changelog는 SQL 형식으로 쓴다 | 유효 (루트 형식은 → 0016) | 2026-08-31 |
+| [0010](0010-schema-migration-liquibase.md) | 스키마 마이그레이션은 Liquibase로 하고 changelog는 SQL 형식으로 쓴다 | 유효 (루트 형식은 → 0016, 테넌트 스키마는 → 0021) | 2026-08-31 |
 | [0011](0011-shared-spec-folder-naming.md) | 공유 규격의 폴더·패키지 이름을 `api-spec`으로 한다 | 유효 | 2026-08-26 |
 | [0012](0012-documents-live-in-notion.md) | 제품 문서의 원본을 Notion에 두고 저장소에는 사본을 두지 않는다 | 대체됨 (→ 0013) | 2026-08-27 |
 | [0013](0013-documents-live-in-repo.md) | 문서의 원본은 저장소에 두고 Notion은 읽기용 사본으로 삼는다 | 유효 | 2026-08-28 |
@@ -26,6 +26,7 @@ DayLink 프로젝트의 **기술 판단**을 기록하는 곳이다. 제품 요�
 | [0018](0018-idempotency-key-lifetime.md) | 멱등 키는 24시간 살고, 만료된 키는 거부하며, 행은 7일 보관한다 | 유효 | 2026-09-04 |
 | [0019](0019-partial-refund-allocation.md) | 환불은 결제액을 기준으로 계산하고, 수수료를 먼저 반납한다 | 유효 | 2026-09-04 |
 | [0020](0020-slot-cancellation.md) | 회차 취소는 한 번에 끝내고, 귀책이 있는 쪽이 전액 부담한다 | 유효 | 2026-09-04 |
+| [0021](0021-tenant-isolation-moves-to-run-scope.md) | 테넌트 격리를 스키마 분리에서 실행 단위로 옮긴다 | 유효 | 2026-09-18 |
 
 ## 쓰는 법
 
