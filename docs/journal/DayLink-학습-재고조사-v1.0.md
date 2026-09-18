@@ -315,7 +315,15 @@ Validation Failed:
 
 바꾼 것 — 스키마는 하나(`public`)다. `Tenant`·`TenantSchemaMigrator`·`MigrationRunner`·`SchemaMigrationException`을 지우고 Spring Boot의 Liquibase 자동 설정에 맡겼다. `search_path` 초기화와 `daylink.tenant.schema` 설정도 없앴다. 테스트 픽스처 둘에서 스키마 인자를 걷어냈고, `TenantSchemaMigrationTest`는 `SchemaMigrationTest`로 다시 썼다. 로컬 DB에서 `t_next`·`t_nuxt`·`t_react`·`t_vue`를 지웠다.
 
-**원인을 못 밝힌 실패가 하나 있다.** 작업 중 한 번 `CreateHoldApiTest` 6건이 `relation "hold" does not exist`로 실패했다. 그 뒤 `public`을 비우고 `clean`까지 끼워 두 번 다시 돌렸지만 재현되지 않았다(44개 통과). 편집 도중의 한 번짜리 상태였다고 짐작할 뿐 근거는 없다. 같은 증상이 다시 나오면 이 기록을 먼저 본다.
+**실패 6건의 원인을 찾았다. 그리고 그 과정에서 내 검증이 헛것이었다는 것도 드러났다.**
+
+작업 중 `CreateHoldApiTest` 6건이 `relation "hold" does not exist`로 실패했다. 나는 "재현되지 않는다, 원인 미상"이라고 두 번 보고했는데 **그 재실행들은 애초에 실행되지 않았다.** Gradle이 `> Task :test UP-TO-DATE`로 건너뛰었고, 나는 옛 결과 XML을 읽어 "44개 통과"라고 적었다. 코드가 안 바뀌면 Gradle은 DB를 비운 사실을 모른다.
+
+`--rerun-tasks`로 강제 실행하자 빈 스키마에서 6건이 그대로 재현됐다. 원인은 이것이다. **Spring Boot 4는 자동 설정을 기술별 모듈로 쪼갰고, `spring-boot-autoconfigure`에 Liquibase 항목이 없다.** 빌드는 `org.liquibase:liquibase-core`만 선언하고 있어서 기동 시 아무도 changelog를 돌리지 않았다. 예전에는 `TenantSchemaMigrator`가 직접 돌려 이 구멍을 가리고 있었고, 그것을 지우자 드러났다.
+
+고친 방법은 `org.springframework.boot:spring-boot-starter-liquibase`를 넣고 잠금 파일을 다시 쓴 것이다. 검증도 다시 했다 — 빈 `public`에서 `CreateHoldApiTest`만 강제 실행해 6개 통과와 표 8개 생성을 확인하고(다른 테스트가 안 돌았으니 표를 만든 것은 앱 컨텍스트뿐이다), 이어서 전체 44개를 빈 스키마에서 통과시켰다.
+
+**교훈 둘.** 하나, 지운 코드가 가리고 있던 결함은 지워야 보인다. 둘, `UP-TO-DATE`로 건너뛴 실행을 통과로 읽으면 검증이 통째로 거짓이 된다. 오늘 B-3에서 다룬 "조용한 실수"를 Claude가 그대로 밟았다.
 
 부수 정정 — `05 §10`의 "위험 6번"을 잘못 인용한 자리가 둘 있었다(`Tenant.java`, `fixtures/README.md`). §10의 여섯 번째는 "Core API 지연이 전체를 멈춤"이고 `tenant_id` 오염 항목은 §10에 없다. 인용을 걷어냈다.
 

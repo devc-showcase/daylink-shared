@@ -51,4 +51,5 @@ ADR-0010이 테넌트 스키마 넷(`t_next`·`t_nuxt`·`t_react`·`t_vue`)을 �
 - **`05 §4.1`의 "격리된 테스트 테넌트"를 스키마로는 더 이상 만족하지 않는다.** 실행 단위로 충족한다. PRD 문구와 구현 수단이 어긋나므로, 비교 실행을 실제로 시작할 때 이 문장을 다시 본다
 - **다음 작업이 테스트 DB 분리다.** 지금은 테스트가 개발 데이터베이스에 그대로 붙는다. Testcontainers로 옮기면 실행마다 새 데이터베이스를 받아 이 결정의 격리 근거가 완성된다
 - `fixtures/README.md`의 테넌트 절을 다시 썼다. `0001-catalog.sql`과 `daylink-core-api/README.md`의 관련 주석도 고쳤다
+- **가려져 있던 결함이 드러났다.** `TenantSchemaMigrator`를 지우자 빈 스키마 첫 실행이 깨졌다. Spring Boot 4는 자동 설정을 기술별 모듈로 쪼갰고 `spring-boot-autoconfigure`에 Liquibase 항목이 없는데, 빌드가 `org.liquibase:liquibase-core`만 선언하고 있어 **기동 시 아무도 changelog를 돌리지 않았다.** 직접 돌리는 마이그레이터가 그 구멍을 가리고 있었던 것이다. `org.springframework.boot:spring-boot-starter-liquibase`를 넣어 고쳤고, 빈 `public`에서 전체 테스트가 통과하는 것을 확인했다
 - **번복 조건**: 두 구현을 동시에 띄워 손으로 비교하는 일이 실제로 잦아지고 계정·시드 분리로 감당이 안 되면, 제품 단위 스키마 둘(`t_b2c`·`t_admin`)을 새 ADR로 다시 도입한다. 진짜 멀티테넌시(고객사별 분리)가 요구로 들어오면 그것은 이 결정과 무관한 별개 설계다
