@@ -27,6 +27,7 @@ DayLink 프로젝트의 **기술 판단**을 기록하는 곳이다. 제품 요�
 | [0019](0019-partial-refund-allocation.md) | 환불은 결제액을 기준으로 계산하고, 수수료를 먼저 반납한다 | 유효 | 2026-09-04 |
 | [0020](0020-slot-cancellation.md) | 회차 취소는 한 번에 끝내고, 귀책이 있는 쪽이 전액 부담한다 | 유효 | 2026-09-04 |
 | [0021](0021-tenant-isolation-moves-to-run-scope.md) | 테넌트 격리를 스키마 분리에서 실행 단위로 옮긴다 | 유효 | 2026-09-18 |
+| [0022](0022-tests-own-their-database.md) | 테스트는 Testcontainers로 자기 데이터베이스를 띄운다 | 유효 | 2026-09-21 |
 
 ## 쓰는 법
 

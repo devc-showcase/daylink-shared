@@ -16,7 +16,7 @@
 
 **지금까지.** 본 레인 회차 1~11 통과, 기초 레인을 모두 마쳤다(A-1~A-4, B-1~B-3, C-1~C-3). §2의 빈칸 3건과 §3의 뒤집힌 이해 2건이 모두 해소됐다. 회차 1~5는 자바 없이 SQL만, 6부터 자바다.
 
-**다음 한 걸음 — 테스트 DB 분리(§6.3).** 지금은 실습과 통합 테스트가 `application.yml`이 가리키는 개발 데이터베이스(`public` 스키마)에 그대로 붙는다. `ADR-0009`가 예고한 Testcontainers 전환과 이어진다. 본 레인 `D10` 3종은 회차 7·8·11로 끝났다. 기초 레인은 2026-09-09에 신설해 2026-09-18에 끝냈다. A는 파일·메서드·예외·타입, B는 인터페이스·람다·`==`, C는 XML·값 바인딩·왜 XML인가였다. 회차별 기록과 그때그때의 결정은 §6.4에 있다.
+**다음 한 걸음 — §5.3 재작성.** `CreateHoldTransaction`·`tryHoldSeats`·`CreateHoldService`를 사용자가 다시 쓴다. 테스트 DB 분리는 회차 12로 끝났다 — 이제 테스트가 Testcontainers로 자기 데이터베이스를 띄우므로, 재작성한 코드를 검증할 때 격리가 근거를 흔들지 않는다. 본 레인 `D10` 3종은 회차 7·8·11로 끝났다. 기초 레인은 2026-09-09에 신설해 2026-09-18에 끝냈다. A는 파일·메서드·예외·타입, B는 인터페이스·람다·`==`, C는 XML·값 바인딩·왜 XML인가였다. 회차별 기록과 그때그때의 결정은 §6.4에 있다.
 
 **먼저 알려 주고, 그 위에서 묻는다.** A-4를 마칠 때 사용자가 배운 적 없는 것을 유추하라고 해서 어렵다고 했고, C부터 이 방식으로 바꿨다. 본 레인에도 그대로 쓴다.
 
@@ -26,11 +26,11 @@
 
 **교습 방식은 §5와 메모리 `daylink-teaching-protocol`이 정본이다.** 예측 먼저, 회차 하나에 개념 하나, 확인 질문 셋을 못 맞히면 진도를 안 나간다. 자바 문법을 아는 것으로 가정하지 않는다.
 
-**세션 시작은 어제 것 하나를 다시 묻는 것으로 연다.** 못 맞혀도 정상이고, 그래서 묻는 것이다. 다음에 물을 것 — `REQUIRED`와 `REQUIRES_NEW`의 차이, 그리고 자기 호출로 부르면 왜 전파가 무시되는지(회차 11).
+**세션 시작은 어제 것 하나를 다시 묻는 것으로 연다.** 못 맞혀도 정상이고, 그래서 묻는 것이다. 다음에 물을 것 — `@ServiceConnection`이 하는 일, 그리고 테스트가 컨테이너를 쓰는지 개발 DB를 쓰는지 어떻게 가리는지(회차 12). 답은 "개발 컨테이너를 내리고 돌려 본다"다.
 
 **질문도 코드로 한다.** B-2를 열 때 말로 물었더니 질문 자체를 이해하지 못했고, `Greeter g = new Korean();`을 보여 주자 바로 답했다.
 
-**환경.** `daylink-postgres` 컨테이너 상시 기동. 실습은 `lab` 스키마(`seat`·`hold`·`idem`)이고 Liquibase가 관리하지 않는다 — 이 기계에만 있다. 실습 파일은 `src/test/java/com/daylink/coreapi/lab/`. XML은 `src/test/resources/labmapper/`에 있다(2026-09-11 사용자가 옮김. 옮긴 뒤 테스트 34개 통과 확인). `src/test/resources/mapper/`는 만들면 안 된다 — 기존 매퍼가 통째로 가려진다(§6.2 회차 9).
+**환경.** 테스트는 Testcontainers가 띄우는 컨테이너에서 돈다(ADR-0022). 개발용 `daylink-postgres`를 내려도 전체가 통과한다. 실습은 `lab` 스키마(`seat`·`hold`·`idem`)이고 Liquibase가 아니라 `LabSchemaFixture`가 만든다. 실습 파일은 `src/test/java/com/daylink/coreapi/lab/`, XML은 `src/test/resources/labmapper/`에 있고 둘 다 git이 추적한다(2026-09-21부터). `src/test/resources/mapper/`는 만들면 안 된다 — 기존 매퍼가 통째로 가려진다(§6.2 회차 9).
 
 **에디터는 Cursor다.** IntelliJ가 아니다. Test Runner for Java 확장이 깔려 있어서 테스트 줄 옆 ▶로 돌린다. 에러는 Cursor에도 뜨지만, 통과한 테스트의 `println` 출력은 테스트 항목에 붙지 않는다("테스트 사례에서 출력을 보고하지 않았습니다"). 출력을 봐야 하면 `./gradlew test`를 돌리고 `build/reports/tests/test/` HTML 보고서의 Standard output 탭을 연다.
 
@@ -287,6 +287,19 @@ Validation Failed:
 
 정리 상태 — 실습 파일 `LabInnerService.java`와 `LabOuterService.java`가 늘었다. 전체 테스트 44개가 통과한다(2026-09-18, Claude가 실행해 확인).
 
+**회차 12 — 테스트가 자기 데이터베이스를 갖는다 (2026-09-19~21, 통과)**
+`ADR-0009`가 예고한 Testcontainers 전환이다. 합격 기준을 먼저 정했다 — **개발용 컨테이너를 내린 채 전체 테스트가 통과할 것.**
+
+**방식을 두 가지 바꿨다.** 사용자가 "배경지식이 없으니 예측이 전혀 안 된다"고 해서 예측을 접고 설명부터 했다. 그리고 용어 지적을 받았다 — 원문은 "억지로 한글로 번역하는 것 같다. 개발자들이 쓰는 용어는 어느 정도 이해할 수 있다". 테이블을 "표", 래퍼를 "상자"로 옮겨 쓰던 것을 그만뒀다. `CLAUDE.md` §1이 이미 정한 규칙인데 내가 어기고 있었다. 메모리 `daylink-writing-style`에 적었다.
+
+만든 것 넷이다. `TestDatabase`(컨테이너 하나를 static으로 띄운다. 이미지는 `postgres:18` 고정, `stop()`은 Ryuk에 맡긴다), `ContainerConfig`(`@TestConfiguration` + `@Bean @ServiceConnection`), `DatabaseFixture`를 컨테이너 기반으로 전환(Spring 없는 테스트 둘도 같은 컨테이너를 본다), `LabSchemaFixture`(`lab` 스키마와 테이블 셋을 만든다. `ADR-0021`이 고른 "테스트 코드가 만든다" 방식이다). Spring 테스트 네 곳에 `@Import(ContainerConfig.class)`를 붙였다.
+
+의존성에서 한 번 막혔다. Boot BOM은 `org.testcontainers:testcontainers` 버전만 관리하고 기술별 모듈은 관리하지 않아서, Testcontainers BOM을 따로 들여왔다. 게다가 2.x에서 모듈 이름이 바뀌었다 — 1.x의 `org.testcontainers:postgresql`이 `testcontainers-postgresql`이다. 옛 이름으로 적으면 "Could not find ... :."로 버전을 못 찾는다.
+
+**틀린 배선이 교재가 됐다.** 확인용으로 만든 `TestDatabaseTest`에 `@SpringBootTest`와 `@Import({TestDatabase.class})`를 붙였더니 컨텍스트가 안 떴다. 원인은 `localhost:5432` 연결 거부였다 — `@ServiceConnection`이 없으니 Spring이 `application.yml`을 그대로 본 것이다. 컨테이너를 쓰지 않으면 어떻게 되는지가 그대로 드러났다. 그리고 세션 첫머리 자기 호출 실험에서 만든 단언이 예측값(1) 그대로 남아 있어 `isZero()`로 고쳤다.
+
+정리 상태 — 개발용 컨테이너를 내린 채 전체 테스트 46개가 통과한다(2026-09-21, Claude가 `--rerun-tasks`로 실행해 확인).
+
 ---
 
 ## 6.3 남은 실습 자산과 미결 사항 (2026-09-09 기준)
@@ -297,13 +310,13 @@ Validation Failed:
 
 **처리 방침 — 그대로 둔다(선택지 C, 2026-09-09 사용자 결정).** 재작성 회차에서 정리한다. changeset으로 넣거나(A) 테스트가 스스로 만들게 하는(B) 데 시간을 쓰지 않는다.
 
-### 새로 열린 항목 — 테스트 DB 분리
+**2026-09-21에 B로 바뀌었다(ADR-0022).** 회차 12에서 `LabSchemaFixture`가 `lab` 스키마와 테이블을 만들도록 했다. 이 노트북에만 있다는 전제가 사라졌으므로 **실습 파일도 git으로 추적하기 시작한다**(2026-09-21 사용자 결정).
 
-사용자가 C를 고르며 든 이유가 실제로는 다른 것을 가리켰다. **"테스트 DB를 실제 DB와 별개로 둔다."** 지금도 성립하지 않는다 — `src/test`에 설정 파일이 없어 테스트가 `application.yml`을 그대로 쓰고, `localhost:5432/daylink`의 `public` 스키마에 직접 붙는다. `CreateHoldApiTest`가 그 스키마의 `slot`에 행을 넣는다.
+### 테스트 DB 분리 — 해소됨 (회차 12, 2026-09-21)
 
-`ADR-0009`가 이미 Testcontainers 전환을 예고했고, `daylink-jvm-transfer` 메모도 **상시 기동 DB는 격리가 약해 동시성 테스트가 거짓 통과할 수 있다**고 적어뒀다. 재작성한 `CreateHoldTransaction`을 검증할 때 이 약한 격리가 근거를 흔든다.
+사용자가 C를 고르며 든 이유가 실제로는 다른 것을 가리켰다. **"테스트 DB를 실제 DB와 별개로 둔다."** 오랫동안 성립하지 않았다 — `src/test`에 설정 파일이 없어 테스트가 `application.yml`을 그대로 쓰고 `localhost:5432/daylink`에 직접 붙었다. `CreateHoldApiTest`가 개발용 데이터베이스의 `slot`에 행을 넣었다.
 
-**별도 회차로 다룬다.** §5.3 재작성보다 먼저 할지는 미정.
+`ADR-0009`가 Testcontainers 전환을 예고했고, `daylink-jvm-transfer` 메모도 **상시 기동 DB는 격리가 약해 동시성 테스트가 거짓 통과할 수 있다**고 적어뒀다. 회차 12에서 그 전환을 끝냈다. 이제 테스트가 컨테이너를 직접 띄우고, 개발용 컨테이너를 내린 상태에서도 전체가 돈다.
 
 ### 테넌트 스키마 넷을 걷어냈다 (2026-09-18, ADR-0021)
 
