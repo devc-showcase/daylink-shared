@@ -126,7 +126,7 @@ if [ "$MCODE" = "200" ] && [ -s "$JAR" ]; then
     INFO="$(awk '/^info:/{f=1;next} f&&/^  version:/{print $2;exit}' "$TMP/jar/daylink/openapi.yaml")"
     expect "maven: 명세가 선언한 info.version" "$VERSION" "$INFO"
     OPS="$(grep -c 'operationId:' "$TMP/jar/daylink/openapi.yaml" || true)"
-    expect "maven: 오퍼레이션 수" "11" "$OPS"
+    expect "maven: 오퍼레이션 수" "20" "$OPS"
   else
     record FAIL "maven: daylink/openapi.yaml 존재" "없음"
   fi

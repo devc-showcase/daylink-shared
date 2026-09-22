@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 작성일 | 2026-08-23 |
-| 대상 프로젝트 | DayLink (PRD `00` v2.2·`01` v2.1·`02` v2.2·`06` v1.2, IA v2.3 기준) |
+| 대상 프로젝트 | DayLink (PRD `00` v2.2·`01` v2.1·`02` v2.2·`06` v1.3, IA v2.3 기준) |
 | 학습자 조건 | React SPA·Next.js 실무 / **Vue 2·Nuxt 2 실무 (Vue 3·Nuxt 4 미경험)** / 주 20시간 이상 / 목적: 학습 + SI 실무 적용 / Core API는 실무 레벨 직접 구현 |
 | 프레임워크 | ALTER — Advisor, Librarian, Tutor, Editor, Roommate |
 

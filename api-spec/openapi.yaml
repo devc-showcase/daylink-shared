@@ -3,7 +3,9 @@
 # 이 파일이 명세의 원본이다. 네 프론트 구현과 Core API가 여기서 타입을 생성한다.
 # 06 §9.1 명세 우선 — 스키마와 오류 코드를 코드보다 먼저 확정한다.
 #
-# 상태: 작성 완료. 오퍼레이션 11건.
+# 상태: 작성 완료. 오퍼레이션 20건 (업무 12 + 인증 8).
+#       "11건"으로 적혀 있던 값은 ADR-0020으로 `cancelSlot`이 늘 때 따라오지 않은
+#       옛 수치였다. 2026-09-22에 세어 바로잡았다.
 #       각 엔드포인트의 판단 근거는 design-checklist.md에 남아 있다.
 #       설계를 바꿀 때는 그 판단부터 다시 읽는다.
 
@@ -11,7 +13,7 @@ openapi: 3.1.0
 
 info:
   title: DayLink Core API
-  version: 0.2.2
+  version: 0.3.0
   description: |
     DayLink의 업무 규칙을 판정하는 단일 권위자.
     가격·재고·권한·상태 전이·정산은 전부 이 서버가 결정한다(00 §8).
@@ -32,6 +34,8 @@ security:
   - customerAuth: []
 
 tags:
+  - name: auth
+    description: 가입·로그인·세션. 인증 수단은 계정과 분리한다(ADR-0023)
   - name: hold
     description: 재고 임시 확보
   - name: booking
@@ -44,6 +48,455 @@ tags:
     description: 정산 원장
 
 paths:
+  # ═══════════════════════════════════════════════════════════
+  # 인증 — 가입·로그인·세션 (ADR-0023)
+  #
+  # 이 여덟 개는 나머지 경로와 두 군데가 다르다. 예외이므로 이유를 남긴다.
+  #
+  # 1. `security: []`
+  #    전역 `security: customerAuth`를 끈다. 토큰을 받으러 오는 경로가
+  #    토큰을 요구하면 성립하지 않는다. OpenAPI에서 빈 배열은 "보안 요구
+  #    없음"을 뜻하며, 필드를 생략하는 것(전역 상속)과 다르다.
+  #
+  # 2. `Idempotency-Key`를 받지 않는다
+  #    00 §8은 모든 쓰기에 멱등 키를 요구한다. 여기서 벗어나는 이유는
+  #    여덟 개가 전부 **자연 키를 이미 들고 있기** 때문이다. 가입은 이메일
+  #    유일 제약이, 확인·재설정은 일회성 토큰이 그 일을 한다. 별도 키를
+  #    더해도 막아 주는 것이 없다.
+  #    갱신은 반대 방향이다. refresh는 **재전송되면 안 되는** 요청이다.
+  #    저장된 응답을 그대로 돌려주는 순간 회전과 재사용 감지(RFC 9700)가
+  #    무력해진다. 멱등 키를 붙이면 명세가 그 구멍을 직접 뚫는 꼴이 된다.
+  # ═══════════════════════════════════════════════════════════
+  /auth/signup:
+    post:
+      tags: [auth]
+      summary: 회원가입
+      operationId: signUp
+      security: []
+      description: |
+        계정을 만들고 이메일 확인 토큰을 발급한다. **세션은 발급하지 않는다.**
+
+        **왜 가입 응답에 토큰이 없나.**
+        ADR-0023 결정 6이 이메일 확인을 마쳐야 로그인된다고 정했다. 가입 직후
+        세션을 주면 확인이 사실상 선택이 되고, 미확인 주소를 가진 계정이 예약까지
+        만들 수 있다. 그러면 예약 알림과 취소 안내를 보낼 곳이 검증되지 않은 채 남는다.
+
+        **약관 동의는 요청에 싣는다.**
+        01 §5.3 B2C-AUTH-01이 필수 약관과 선택 수신 동의를 분리해 받으라고 한다.
+        서버가 필수 항목이 모두 `agreed: true`인지 판정하며, 빠지면 422다.
+        동의는 `Consent` 행으로 쌓인다 — `User`의 필드로 두면 약관이 개정됐을 때
+        누가 몇 판에 동의했는지 남지 않는다.
+
+        **메일 발송은 범위 밖이다.**
+        ADR-0023 결정 6 — 토큰을 발급하고 검증하는 것까지가 범위이고, 발송은
+        로그 출력으로 대체한다. 응답이 토큰 자체를 담지 않는 것은 그 때문이 아니라,
+        담으면 메일함을 가진 사람만 확인할 수 있다는 전제가 깨지기 때문이다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '201':
+          description: |
+            가입됨. `status`는 `PENDING_VERIFICATION`이고 아직 로그인할 수 없다.
+            클라이언트는 "메일을 확인하세요" 화면으로 보낸다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignUpResult'
+        '409':
+          description: |
+            `EMAIL_ALREADY_REGISTERED` — 이미 가입된 주소다.
+
+            **이 응답은 계정의 존재를 알려 준다.** 로그인 실패(01 §5.3)와 달리
+            감추지 않는 이유는, 감추면 가입이 성공한 척해야 하고 그러면 사용자가
+            오지 않을 메일을 기다리기 때문이다. 대신 클라이언트는 이 코드를 받으면
+            로그인 또는 비밀번호 재설정으로 안내한다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: |
+            `VALIDATION_FAILED` — 비밀번호 길이 미달, 필수 약관 미동의 등.
+            `details.fields`에 어긋난 항목을 담는다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: 로그인
+      operationId: logIn
+      security: []
+      description: |
+        비밀번호를 확인하고 세션을 연다. 액세스 토큰은 **응답 본문**에,
+        refresh는 **HttpOnly 쿠키**에 실어 보낸다.
+
+        **왜 둘을 다른 곳에 싣나.**
+        액세스 토큰은 분 단위로 살고 메모리에만 둔다. refresh는 오래 살아서
+        탈취의 값어치가 크므로 JavaScript가 읽을 수 없는 자리에 둔다. 본문으로
+        내려보내면 네 프론트 구현이 각자 어디에 보관할지 정해야 하고, 그중
+        하나라도 `localStorage`를 고르면 XSS 한 번에 장기 세션이 넘어간다.
+        판단 근거 전체는 design-checklist.md의 `POST /auth/refresh` 절에 있다.
+
+        **실패는 뭉쳐서 답한다.**
+        비밀번호가 틀렸든 없는 계정이든 같은 401이다. 01 §5.3이 "로그인 실패는
+        계정 존재 여부를 과도하게 노출하지 않는 메시지"를 요구한다. 두 경우를
+        가르면 이 경로가 계정 존재 여부를 묻는 조회 API가 된다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogInRequest'
+      responses:
+        '200':
+          description: 로그인 성공
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/RefreshCookie'
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '401':
+          description: |
+            `UNAUTHENTICATED` — 이메일 또는 비밀번호가 맞지 않는다.
+            **어느 쪽이 틀렸는지 구분해 주지 않는다.**
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: |
+            `EMAIL_NOT_VERIFIED` — 비밀번호는 맞았으나 이메일 확인을 마치지 않았다.
+
+            401과 가르는 이유는 사용자가 할 일이 다르기 때문이다. 앞은 다시 입력할
+            일이고 이것은 메일함을 열 일이다. `details.email`에 확인이 필요한 주소를
+            담아 클라이언트가 재발송 요청을 바로 만들 수 있게 한다.
+
+            비밀번호가 맞은 뒤에만 나오므로 위 401의 비노출 원칙과 부딪히지 않는다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '423':
+          description: |
+            `ACCOUNT_SUSPENDED` — 01 §2의 이용 정지 고객이다.
+            재시도로 풀리지 않으므로 `retryable: false`다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: '`VALIDATION_FAILED` — 형식이 이메일이 아닌 등'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: 액세스 토큰 갱신
+      operationId: refreshSession
+      security: []
+      description: |
+        쿠키의 refresh를 검증하고 **새 액세스 토큰과 새 refresh**를 발급한다.
+        요청 본문이 없다 — 필요한 것이 전부 쿠키에 있다.
+
+        **`security: []`인 이유.**
+        여기 오는 이유가 액세스 토큰이 만료됐기 때문이다. Bearer를 요구하면
+        만료된 토큰으로는 갱신할 수 없고, 갱신 경로가 스스로를 막는다.
+
+        **회전한다(RFC 9700).**
+        성공하면 쓴 refresh는 즉시 폐기하고 새것을 쿠키로 덮어쓴다. 같은 refresh를
+        두 번 쓸 수 없다.
+
+        **재사용을 감지하면 계정 전체를 끊는다.**
+        이미 폐기된 refresh가 다시 오면 그것이 탈취의 신호다 — 정상 클라이언트는
+        회전된 값을 들고 있으므로 옛 값을 쓸 이유가 없다. 이때 그 사용자의 **모든**
+        refresh를 폐기하고 401을 준다. 공격자와 피해자 중 누가 보낸 요청인지
+        서버가 가릴 수 없으므로 둘 다 끊고 다시 로그인하게 하는 편이 안전하다.
+        이것이 refresh를 서버에 저장하는 이유이기도 하다. 무상태 토큰은 발급 이력이
+        없어 재사용을 볼 수 없다(ADR-0023 근거).
+      responses:
+        '200':
+          description: |
+            갱신됨. 새 refresh 쿠키가 옛 쿠키를 덮어쓴다.
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/RefreshCookie'
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '401':
+          description: |
+            `UNAUTHENTICATED` — 쿠키가 없거나, 만료됐거나, 이미 폐기된 값이다.
+
+            `details.reason`으로 갈라 준다.
+              - `MISSING` — 쿠키가 없다
+              - `EXPIRED` — 유효 기간이 지났다
+              - `REUSE_DETECTED` — 폐기된 값이 다시 왔다. **모든 세션이 끊겼다**
+
+            셋 다 클라이언트가 할 일은 같다(로그인 화면으로). 그래도 가르는 이유는
+            마지막 경우에 "다른 기기에서도 로그아웃되었습니다"를 안내해야 하고,
+            서버 로그와 대조할 근거가 필요하기 때문이다.
+          headers:
+            Set-Cookie:
+              description: 폐기된 쿠키를 지우기 위해 만료된 값으로 덮어쓴다
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: 로그아웃
+      operationId: logOut
+      security: []
+      description: |
+        쿠키의 refresh를 폐기하고 쿠키를 지운다.
+
+        **`security: []`인 이유.**
+        액세스 토큰이 만료된 상태에서도 로그아웃은 되어야 한다. Bearer를 요구하면
+        "만료돼서 로그아웃도 못 하는" 상태가 생기고, 그때 refresh는 서버에 살아 있다.
+
+        **항상 204다.**
+        쿠키가 없어도, 이미 폐기된 값이어도 204다. 로그아웃은 결과 상태를 요구하는
+        요청이고 그 상태는 어느 경우든 "세션 없음"으로 같다. 404나 401을 주면
+        클라이언트가 지울 수 없는 화면에 갇힌다.
+
+        **이 기기만 끊는다.** 다른 기기의 세션은 그대로다.
+      responses:
+        '204':
+          description: 폐기됨. 쿠키를 만료시킨다.
+          headers:
+            Set-Cookie:
+              description: 만료된 값으로 덮어써 쿠키를 지운다
+              schema:
+                type: string
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /auth/verify-email:
+    post:
+      tags: [auth]
+      summary: 이메일 확인
+      operationId: verifyEmail
+      security: []
+      description: |
+        메일로 받은 일회성 토큰을 검증하고 `PENDING_VERIFICATION → ACTIVE`로 옮긴다.
+
+        **왜 GET이 아니라 POST인가.**
+        메일 링크를 누르면 도는 동작이라 GET이 자연스러워 보인다. 그러나 이 요청은
+        상태를 바꾼다. 메일 클라이언트와 보안 스캐너가 링크를 미리 열어 보는 일이
+        흔한데, GET이면 사용자가 누르기도 전에 확인이 끝난다. 그래서 링크는 프론트
+        화면을 열고, 그 화면이 토큰을 실어 이 POST를 보낸다.
+
+        **세션을 주지 않는다.** 확인을 마친 뒤 로그인 화면으로 보낸다. 토큰은
+        메일함에 남아 있고, 메일함 접근만으로 세션이 열리면 안 된다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+      responses:
+        '200':
+          description: |
+            확인됨. 이미 확인된 계정에 다시 보내도 200이다 — 토큰이 소모된 뒤에는
+            410이지만, 상태가 이미 `ACTIVE`라면 사용자가 원한 결과는 이뤄져 있다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummary'
+        '410':
+          description: |
+            `VERIFICATION_TOKEN_EXPIRED` — 유효 기간이 지났거나 이미 쓰인 토큰이다.
+            **새 토큰을 받아야 하므로** `retryable: false`이고, 클라이언트는
+            재발송 경로로 안내한다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: |
+            `NOT_FOUND` — 그런 토큰이 없다. 위조된 값과 구분해 주지 않는다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /auth/verify-email/resend:
+    post:
+      tags: [auth]
+      summary: 이메일 확인 재발송
+      operationId: resendEmailVerification
+      security: []
+      description: |
+        확인 토큰을 새로 발급한다. 옛 토큰은 폐기한다.
+
+        **이 경로가 없으면 결정 6이 성립하지 않는다.** 확인 전 로그인을 막아 두면
+        메일이 도착하지 않은 사용자는 아무것도 할 수 없다(ADR-0023 근거).
+
+        **항상 202다.** 가입되지 않은 주소든, 이미 확인된 계정이든 같은 응답이다.
+        여기서 갈라 주면 이 경로가 계정 존재 여부를 묻는 조회 API가 된다 —
+        가입과 달리 이쪽은 감출 수 있고, 감춰서 잃는 것이 없다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+      responses:
+        '202':
+          description: |
+            접수됨. **메일을 보냈다는 뜻이 아니다** — 그 주소에 보낼 것이 있으면
+            보냈다는 뜻이다. 200이 아니라 202인 이유가 이것이다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+        '429':
+          description: |
+            `TOO_MANY_REQUESTS` — 재발송 요청이 잦다. 메일 폭탄에 쓰이는 것을 막는다.
+            `retryable: true`이며 `details.retryAfterSeconds`를 함께 준다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: '`VALIDATION_FAILED` — 이메일 형식이 아니다'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /auth/password-reset:
+    post:
+      tags: [auth]
+      summary: 비밀번호 재설정 요청
+      operationId: requestPasswordReset
+      security: []
+      description: |
+        재설정 토큰을 발급한다(01 §5.3 B2C-AUTH-003).
+        이메일 확인과 **같은 토큰 구조**를 쓰고 쓰임만 다르다(ADR-0023 결정 6).
+
+        **항상 202다.** 재발송과 같은 이유다. 여기서 "그런 계정 없습니다"를 주면
+        가입 여부를 조회하는 경로가 된다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+      responses:
+        '202':
+          description: 접수됨. 그 주소에 보낼 것이 있으면 보냈다.
+          headers:
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+        '429':
+          description: '`TOO_MANY_REQUESTS` — `details.retryAfterSeconds` 포함'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: '`VALIDATION_FAILED` — 이메일 형식이 아니다'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /auth/password-reset/confirm:
+    post:
+      tags: [auth]
+      summary: 비밀번호 재설정 확정
+      operationId: confirmPasswordReset
+      security: []
+      description: |
+        토큰을 검증하고 비밀번호를 바꾼다.
+
+        **그 사용자의 모든 refresh를 폐기한다.**
+        재설정을 요청하는 흔한 이유가 계정을 빼앗겼다는 의심이다. 비밀번호만 바꾸고
+        기존 세션을 살려 두면 공격자의 세션이 그대로 남아 재설정이 아무것도 되돌리지
+        못한다. `CORE-AC-24`가 요구하는 "활성 세션 종료"와 같은 동작이다.
+
+        **미확인 계정도 여기서 확인 처리된다.** 재설정 토큰이 메일함에 닿았다는 것이
+        곧 그 주소의 소유를 증명하므로, `PENDING_VERIFICATION`이면 함께 `ACTIVE`로
+        옮긴다. 확인 메일을 다시 기다리게 할 이유가 없다.
+
+        **세션을 주지 않는다.** 바꾼 비밀번호로 로그인하게 한다. 이유는 이메일 확인과
+        같다 — 메일함 접근만으로 세션이 열리면 안 된다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+      responses:
+        '204':
+          description: |
+            바뀌었다. 본문이 없다 — 돌려줄 것이 없고, 새 비밀번호와 관련된 어떤
+            값도 응답에 실지 않는다.
+          headers:
+            Set-Cookie:
+              description: 모든 세션을 끊으므로 이 브라우저의 쿠키도 지운다
+              schema:
+                type: string
+            X-Trace-Id:
+              $ref: '#/components/headers/TraceId'
+        '410':
+          description: |
+            `VERIFICATION_TOKEN_EXPIRED` — 만료됐거나 이미 쓰인 토큰이다.
+            재설정을 다시 요청해야 한다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: '`NOT_FOUND` — 그런 토큰이 없다'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: |
+            `VALIDATION_FAILED` — 새 비밀번호가 규칙에 어긋난다.
+            `details.fields`에 담는다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500': { $ref: '#/components/responses/ServerError' }
+
   # ═══════════════════════════════════════════════════════════
   # 이 엔드포인트를 가장 먼저 썼다. 나머지는 이 구조의 변형이다.
   #
@@ -1042,6 +1495,30 @@ components:
       schema:
         type: string
 
+    RefreshCookie:
+      description: |
+        refresh를 담은 쿠키. 속성은 네 개가 고정이다.
+
+          Set-Cookie: dl_refresh=<값>; HttpOnly; Secure; SameSite=Strict; Path=/auth; Max-Age=<초>
+
+        - `HttpOnly` — JavaScript가 읽지 못한다. XSS가 나도 장기 세션은 넘어가지 않는다
+        - `Secure` — HTTPS에서만 실린다
+        - `SameSite=Strict` — 다른 사이트에서 시작한 요청에는 붙지 않는다.
+          `/auth/refresh`가 CSRF로 호출되는 것을 막는다. 갱신은 우리 화면에서
+          XHR로 부르므로 Strict가 정상 흐름을 막지 않는다
+        - `Path=/auth` — 인증 경로에만 실린다. 예약·확보 요청에는 따라붙지 않아
+          노출 면이 좁아진다
+
+        **명세에 값 형식을 적지 않는 이유.** 토큰 문자열의 구조는 서버 구현이고,
+        클라이언트는 이 값을 읽지도 만들지도 않는다. 읽을 수 없게 만든 것을
+        명세에 풀어 적으면 누군가 읽으려 든다.
+
+        나중에 외부 IdP를 붙이면 `SameSite=Strict`를 다시 봐야 한다 — IdP에서
+        돌아오는 최상위 이동은 교차 사이트라 쿠키가 실리지 않는다. 그때 콜백
+        경로만 `Lax`로 갈지 판단한다(ADR-0023 결정 5).
+      schema:
+        type: string
+
   schemas:
 
     # ── 공통 ────────────────────────────────────────────────
@@ -1077,6 +1554,184 @@ components:
           type: object
           description: 코드별 부가 정보. 스키마는 코드마다 다르다.
           additionalProperties: true
+
+    # ── Auth ────────────────────────────────────────────────
+    # 계정(User)과 인증 수단(AuthIdentity)을 나눈다(ADR-0023 결정 1).
+    # 여기 노출되는 것은 계정 쪽뿐이다 — 어떤 수단으로 로그인했는지는
+    # 클라이언트가 분기할 일이 아니다.
+
+    Email:
+      type: string
+      format: email
+      maxLength: 254
+      description: |
+        254는 RFC 5321이 정한 주소 최대 길이다. 임의로 고른 값이 아니다.
+      examples: ['customer@example.com']
+
+    Password:
+      type: string
+      format: password
+      minLength: 10
+      maxLength: 128
+      description: |
+        **하한 10.** NIST SP 800-63B는 8자 이상을 요구한다. 거기에 여유를 둔 값이고,
+        복잡도 규칙(대문자·특수문자 강제)은 두지 않는다 — 같은 문서가 그 규칙이
+        예측 가능한 변형을 부른다는 이유로 권고하지 않는다.
+
+        **상한 128.** Argon2id는 bcrypt와 달리 입력을 자르지 않으므로(ADR-0023 결정 3)
+        길이를 막을 이유가 원래는 없다. 그래도 상한을 두는 것은 해싱 비용 때문이다.
+        메모리를 크게 잡는 알고리즘에 아주 긴 입력을 반복해 보내면 그 자체가 부하가 된다.
+
+        **최종 판정은 서버가 다시 한다.** 스키마 검증은 편의이지 보안 경계가 아니다(06 §9.3).
+
+    ConsentType:
+      type: string
+      enum: [TERMS_OF_SERVICE, PRIVACY_POLICY, MARKETING_EMAIL, MARKETING_SMS]
+      description: |
+        앞의 둘이 필수, 뒤의 둘이 선택이다. 01 §5.3 B2C-AUTH-01이 요구한 분리다.
+        어느 쪽이 필수인지는 **서버가 판정한다** — 클라이언트가 목록을 들고 있으면
+        약관이 바뀔 때 네 구현을 모두 고쳐야 한다.
+
+    ConsentInput:
+      type: object
+      required: [type, version, agreed]
+      properties:
+        type:
+          $ref: '#/components/schemas/ConsentType'
+        version:
+          type: string
+          description: |
+            동의한 약관 판. 이 값을 받는 이유는 개정 이력 때문이다. 나중에 약관이
+            바뀌었을 때 누가 몇 판에 동의했는지 남아 있어야 재동의 대상을 고를 수 있다.
+          examples: ['2026-09-01']
+        agreed:
+          type: boolean
+          description: |
+            선택 항목은 `false`도 그대로 보낸다. 빠뜨린 것과 거절한 것은 다르고,
+            거절도 기록으로 남아야 한다.
+
+    SignUpRequest:
+      type: object
+      required: [email, password, name, consents]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          $ref: '#/components/schemas/Password'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: 예약자 표시 이름. 실명 확인은 하지 않는다(00 §12 범위 밖).
+        consents:
+          type: array
+          minItems: 2
+          items:
+            $ref: '#/components/schemas/ConsentInput'
+          description: |
+            필수 약관이 모두 `agreed: true`여야 한다. 최소 2개인 것은 필수가 둘이기
+            때문이고, 실제 판정은 개수가 아니라 종류로 한다.
+
+    SignUpResult:
+      type: object
+      required: [userId, email, status]
+      properties:
+        userId:
+          type: string
+        email:
+          $ref: '#/components/schemas/Email'
+        status:
+          $ref: '#/components/schemas/UserStatus'
+          description: 가입 직후에는 항상 `PENDING_VERIFICATION`이다.
+
+    UserStatus:
+      type: string
+      enum: [PENDING_VERIFICATION, ACTIVE, SUSPENDED]
+      description: |
+        ADR-0023 결정 6. `SUSPENDED`는 01 §2의 이용 정지 고객이다.
+        `PENDING_VERIFICATION` 상태로는 로그인되지 않는다.
+
+    UserSummary:
+      type: object
+      required: [userId, email, name, status]
+      description: |
+        응답에 싣는 계정 정보는 여기까지다. 권한·역할을 담지 않는 이유는
+        클라이언트가 그것으로 분기하면 안 되기 때문이다 — 권한 판정은 매 요청
+        서버가 다시 한다(06 §9.3, CORE-AC-12).
+      properties:
+        userId:
+          type: string
+        email:
+          $ref: '#/components/schemas/Email'
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/UserStatus'
+
+    LogInRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          type: string
+          description: |
+            여기서는 `Password` 스키마를 쓰지 않는다. 로그인은 **저장된 값과 맞는지**만
+            보므로 길이 규칙을 걸 이유가 없고, 걸면 규칙이 바뀌기 전에 가입한 사용자가
+            자기 비밀번호를 입력조차 못 하게 된다.
+
+    Session:
+      type: object
+      required: [accessToken, tokenType, expiresIn, user]
+      description: |
+        **refresh는 여기 없다.** 쿠키로 나간다(`components/headers/RefreshCookie`).
+        스키마에 넣지 않는 것은 누락이 아니라 결정이다 — 본문에 실으면 네 프론트
+        구현이 각자 보관 자리를 정하게 된다.
+      properties:
+        accessToken:
+          type: string
+          description: |
+            JWT. 클라이언트는 **열어 보지 않고** `Authorization: Bearer`에 그대로 싣는다.
+            안에 든 `audience`·만료는 서버가 판정할 값이다(06 §7).
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: |
+            남은 초. 여기서는 절대 시각이 아니라 상대 초를 준다 — Hold의 `expiresAt`과
+            반대인 이유는 쓰임이 다르기 때문이다. 확보 만료는 **사용자에게 보여 주는**
+            값이라 기기 시계가 틀리면 안 되고, 이 값은 **갱신 시점을 잡는** 내부 값이라
+            받은 순간부터 재면 된다. OAuth 2.0(RFC 6749)도 이 자리에 상대 초를 쓴다.
+          examples: [900]
+        user:
+          $ref: '#/components/schemas/UserSummary'
+
+    EmailRequest:
+      type: object
+      required: [email]
+      description: 재발송과 비밀번호 재설정 요청이 같은 모양이라 하나로 둔다.
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+
+    VerifyEmailRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: 메일로 받은 일회성 토큰. 한 번 쓰면 폐기된다.
+
+    PasswordResetConfirmRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          $ref: '#/components/schemas/Password'
 
     # ── Hold ────────────────────────────────────────────────
     CreateHoldRequest:
