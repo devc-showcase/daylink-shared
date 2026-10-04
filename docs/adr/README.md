@@ -29,6 +29,7 @@ DayLink 프로젝트의 **기술 판단**을 기록하는 곳이다. 제품 요�
 | [0021](0021-tenant-isolation-moves-to-run-scope.md) | 테넌트 격리를 스키마 분리에서 실행 단위로 옮긴다 | 유효 | 2026-09-18 |
 | [0022](0022-tests-own-their-database.md) | 테스트는 Testcontainers로 자기 데이터베이스를 띄운다 | 유효 | 2026-09-21 |
 | [0023](0023-authentication-accounts-and-sessions.md) | 계정과 인증 수단을 분리하고, 세션은 짧은 액세스 토큰 + 서버 저장 refresh로 한다 | 유효 | 2026-09-22 |
+| [0024](0024-access-token-signing.md) | 액세스 토큰은 RS256으로 서명하고 30분 산다 | 유효 | 2026-10-04 |
 
 ## 쓰는 법
 
